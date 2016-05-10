@@ -71,4 +71,8 @@ deploy:
   type: git
   repo: git@github.com:zhex/zhex.github.com.git
   branch: master
+
+
+sitemap:
+  path: sitemap.xml
   
