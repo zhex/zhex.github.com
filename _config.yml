@@ -72,9 +72,17 @@ deploy:
   repo: git@github.com:zhex/zhex.github.com.git
   branch: master
 
+# ------------------------------------------------------------
+# customs
 
 sitemap:
   path: sitemap.xml
 
 disqus_shortname: zhex
+
+feed:
+  type: atom
+  path: atom.xml
+  limit: 20
+  hub:
   
