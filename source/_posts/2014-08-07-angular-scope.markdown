@@ -241,7 +241,7 @@ angular.module("MyApp", [])
       }
     };
   });
-```  
+```
 
 ```html
 <my-user-directive name="{{loggedInUser.firstName}} {{loggedInUser.lastName}}">
@@ -282,7 +282,7 @@ angular.module("MyApp", [])
 <my-add-things fn="add(x, y)"></my-add-things>
 ```
 
-上面的例子中， 我们把父级的add方法作为表达式写入html，directive 通过 “&” 从父级 fn 继承表达式并赋给localFn，然后我们就可以在dirctive 中使用 add 方法了， 而且可以直接传 dirctive scope 中的值进去。这个过滤器可以帮助我们更好的使用父级方法，如果几个不同的 directive 中需要用到公用方法，就可以用 “&” 来避免重复定义。
+上面的例子中， 我们把父级的 add 方法作为表达式写入 html，directive 通过 “&” 从父级 fn 继承表达式并赋给 localFn，然后我们就可以在dirctive 中使用 add 方法了， 而且可以直接传 dirctive scope 中的值进去。这个过滤器可以帮助我们更好的使用父级方法，如果几个不同的 directive 中需要用到公用方法，就可以用 “&” 来避免重复定义。
 
 
 ## 结束语
