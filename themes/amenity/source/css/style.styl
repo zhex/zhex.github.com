@@ -1,10 +1,16 @@
 @import 'nib'
+@import '_vars'
+@import '_mixins'
 @import '_components/*'
 
 body
-  font-family "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Geneva, Arial, sans-serif;
+  font-family font-serif
   margin 0
 
 #main
   width 700px
   margin 0 auto
+
+a
+  text-decoration none
+  $link()

@@ -1,5 +1,24 @@
-<% page.posts.each(function(post) { %>
-    <div class="post">
-        <a href="<%- url_for(post.path) %>"><%= post.title %></a>
+<div class="author">
+    <img class="avatar" src="/images/avatar.jpg"></img>
+    <div class="name"><%= config.author %></div>
+    <div class="title">
+        Frontend Developer
     </div>
-<% }) %>
+</div>
+
+<div class="posts">
+    <h2>文章 <span>Posts</span></h2>
+    
+    <% var posts = page.posts.slice(0, 5) %>
+    
+    <% posts.each(function(post) { %>
+        <div class="post-item">
+            <%- partial('partials/post/date', {post: post}) %>
+            <h3><a href="<%- url_for(post.path) %>"><%= post.title %></a></h3>
+        </div>
+    <% }) %>
+
+    <a class="more-posts" href="/archives">More Posts ....</a>
+</div>
+
+

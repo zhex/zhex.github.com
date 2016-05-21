@@ -1,0 +1,26 @@
+.author
+  margin 50px auto 100px
+  text-align center
+  
+  .avatar
+    size(200px)
+    border-radius(50%)
+    border 1px solid grey
+    display block
+    margin 0 auto 20px
+    transition all .5s ease-out
+    
+    &:hover
+      border-color primary-color
+      box-shadow 10px 10px 80px lighten(primary-color, 80%)
+      transform scale(1.1) rotate(25deg) translate(0, -5px)
+    
+  .title
+    font-size font-size * 1.1
+    color grey
+    
+  .name
+    font-size font-size * 1.5
+    color grey
+    font-weight bold
+   

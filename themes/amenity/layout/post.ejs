@@ -1,20 +1,9 @@
-
 <article>
     <header>
-        <div class="info">
-            <time datetime="<%= date_xml(page.date) %>" itemprop="datePublished"><%= date(page.date, null) %></time>
-            <% if (page.categories && page.categories.length) { %>
-              <div class="article-category">
-                <%- list_categories(page.categories, {
-                  show_count: false,
-                  class: 'article-category',
-                  style: 'none',
-                  separator: '►'
-                }) %>
-              </div>
-            <% } %>
-        </div>
         <h1><%- page.title %></h1>
+        <div class="info">
+            <%- partial('partials/post/category', {post: page}) %>
+        </div>
     </header>
 
     <div class="article-entry"><%- page.content %></div>
@@ -24,10 +13,4 @@
     </footer>
 </article>
 
-<% if (page.comments && config.disqus_shortname) { %>
-<section id="comments">
-  <div id="disqus_thread">
-    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-  </div>
-</section>
-<% } %>
+<%- partial('partials/post/comments', {post: page}) %>
