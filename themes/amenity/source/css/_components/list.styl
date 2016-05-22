@@ -6,11 +6,17 @@ h2
   position relative
   margin 0 0 100px 180px
   
+  @media mq-mobile
+    margin 0
+    padding 0 10px
+  
   h2
     position absolute
     transform translateX(-140%)
     
-    
+    @media mq-mobile
+      transform translateX(0)
+      position static
       
   .more-posts
     display inline-block
@@ -29,6 +35,9 @@ h2
   
   h3
     margin 5px 0 0 20px
+    
+    @media mq-mobile
+      margin-left 0
     
   time
     color lightgrey
