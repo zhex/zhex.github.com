@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh_CN">
+<head>
+	<meta charset="UTF-8">
+
+<title>Rails 4 - Strong parameters</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+</head>
+<body>
+    <header id="header">
+    <ul class="nav">
+        <li><a href="/archives">归档</a></li>
+        <li><a href="/about">关于</a></li>
+    </ul>
+
+    <div class="logo"><a href="/">ZheX.me</a></div>
+</header>
+
+
+    <section id="main"><article>
+    <header>
+        <h1>Rails 4 - Strong parameters</h1>
+        <div class="info">
+            <time datetime="2013-01-06T04:55:00.000Z" itemprop="datePublished">2013-01-06</time>
+
+            
+    <div class="article-category">
+    <a class="article-category-link" href="/categories/Ruby/">Ruby</a>
+    </div>
+
+
+        </div>
+    </header>
+
+    <div class="article-entry"><p>Rails 4 里引入了Strong parameters机制， 让我们看看有什么区别：</p>
+<figure class="highlight ruby"><figcaption><span>Rails 3.2 - mass assignment</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># app/models/uesr.rb</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span> &lt; ActiveRecord::Base</span></div><div class="line">  attr_accessible <span class="symbol">:username</span>, <span class="symbol">:password</span></div><div class="line"><span class="keyword">end</span></div><div class="line"></div><div class="line"><span class="comment"># app/controllers/users_controller.rb</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">UsersController</span> &lt; ApplicationController</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">create</span></span></div><div class="line">    @user = User.create! params[<span class="symbol">:user</span>]</div><div class="line">    redirect_to @user</div><div class="line">  <span class="keyword">end</span></div><div class="line"><span class="keyword">end</span></div></pre></td></tr></table></figure>
+<figure class="highlight ruby"><figcaption><span>Rails 4 - using strong parameters</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># app/models/uesr.rb</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span> &lt; ActiveRecord::Base;</span> <span class="keyword">end</span></div><div class="line"></div><div class="line"><span class="comment"># app/controllers/users_controller.rb</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">UsersController</span> &lt; ApplicationController</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">create</span></span></div><div class="line">    @user = User.create! user_params</div><div class="line">    redirect_to @user</div><div class="line">  <span class="keyword">end</span></div><div class="line"></div><div class="line">  private</div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">user_params</span></span></div><div class="line">    params.<span class="keyword">require</span>(<span class="symbol">:user</span>).permit(<span class="symbol">:username</span>, <span class="symbol">:password</span>)</div><div class="line">  <span class="keyword">end</span></div><div class="line"><span class="keyword">end</span></div></pre></td></tr></table></figure>
+<p>以上两段代码都是为了防止用户恶意修改一些敏感字段。不同的是在 Rails 3.2 的时候，我们使用了 Mass assignment 方法， 我们在 model 中限制字段。 而 Rails 4 我们使用了 strong parameters后，对字段限制的控制权交给了 controller。比较可以看到 strong parameters 的使用会更加灵活，这样将更容易适应复杂的业务需求变化。</p>
+<p>现在 controller 中的 params 是一个 <a href="http://edgeapi.rubyonrails.org/classes/ActionController/Parameters.html" target="_blank" rel="external">ActionController::Parameters</a> 对象。 ActiveModel 有一个 permitted 属性， 默认为 false。我们可以通过 permit！ 或者 permits 方法把该属性设置为 true。</p>
+<p>ActionController::Parameters 有2个关键方法：</p>
+<ul>
+<li><a href="http://edgeapi.rubyonrails.org/classes/ActionController/Parameters.html#method-i-require" target="_blank" rel="external">require(key)</a>: 从 hash 中提取相应的 key，如果没有触发 ActionController::ParameterMissing 错误。</li>
+<li><a href="http://edgeapi.rubyonrails.org/classes/ActionController/Parameters.html#method-i-permit" target="_blank" rel="external">permit(keys)</a>: 设置被允许的属性，并把 permitted 属性设置为 true。</li>
+</ul>
+</div>
+
+    <footer>
+    </footer>
+</article>
+
+
+  <section id="comments">
+    <!-- 多说评论框 start -->
+    <div class="ds-thread" data-thread-key="post-rails-4-strong-parameters" data-title="Rails 4 - Strong parameters" data-url="http://zhex.me/blog/2013/01/06/rails-4-strong-parameters/"></div>
+    <!-- 多说评论框 end -->
+    <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+    <script type="text/javascript">
+    var duoshuoQuery = {short_name:'zhex'};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0] 
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+      </script>
+    <!-- 多说公共JS代码 end -->
+  </section>
+
+
+</section>
+
+    <footer id="footer">
+    &copy;2016 ZheX, Powered by <a href="http://hexo.io">Hexo</a>
+</footer>
+
+
+    
+</body>
+</html>

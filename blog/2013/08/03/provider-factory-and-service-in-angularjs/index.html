@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh_CN">
+<head>
+	<meta charset="UTF-8">
+
+<title>Angularjs 中的 provider, factory 和 service</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+</head>
+<body>
+    <header id="header">
+    <ul class="nav">
+        <li><a href="/archives">归档</a></li>
+        <li><a href="/about">关于</a></li>
+    </ul>
+
+    <div class="logo"><a href="/">ZheX.me</a></div>
+</header>
+
+
+    <section id="main"><article>
+    <header>
+        <h1>Angularjs 中的 provider, factory 和 service</h1>
+        <div class="info">
+            <time datetime="2013-08-03T08:27:00.000Z" itemprop="datePublished">2013-08-03</time>
+
+            
+    <div class="article-category">
+    <a class="article-category-link" href="/categories/前端开发/">前端开发</a>►<a class="article-category-link" href="/categories/前端开发/AngularJS/">AngularJS</a>
+    </div>
+
+
+        </div>
+    </header>
+
+    <div class="article-entry"><p>相信开发过 angularjs 的兄弟们都会被 provider， factory 和 service 困扰，有没有？本人开始也是一头雾水，看似都是差不多的东西，各有什么用呢？经过去外国社区大量搜索以后终于找到了答案：</p>
+<p>其实 provider， factory， service 都属于 provider， 对的，你没有听错。难道 google 的那帮大牛疯了，没事搞3个一样东西出来？还是让我们先来看看代码分析吧。</p>
+<h2 id="什么是-provider"><a href="#什么是-provider" class="headerlink" title="什么是 provider ?"></a>什么是 provider ?</h2><p>provider 可以为应用提供通用的服务，形式可以是常量，也可以是对象。</p>
+<p>比如我们在 controller 里注入进来的 $http, $scope 都可以认为是 provider。 </p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">app.controller(<span class="string">'MainCtrl'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">$scope, $http</span>) </span>&#123;</div><div class="line">  $http.get(....).then(.....);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>现在让我们自己来定制一个 provider</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 方法 1</span></div><div class="line">$provide.provider(<span class="string">'test'</span>, &#123;</div><div class="line">  <span class="attr">n</span>: <span class="number">3</span>;</div><div class="line">  $get: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123; </div><div class="line">    <span class="keyword">return</span> n;</div><div class="line">  &#125;;</div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="comment">// 方法 2</span></div><div class="line">$provide.provider(<span class="string">'test'</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">  <span class="keyword">this</span>.n = <span class="number">3</span>;</div><div class="line">  <span class="keyword">this</span>.$get = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123; </div><div class="line">    <span class="keyword">return</span> n;</div><div class="line">  &#125;;</div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="comment">// 使用</span></div><div class="line">app.controller(<span class="string">'MainCtrl'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">$scope, test</span>) </span>&#123;</div><div class="line">  $scope.test = test;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>让我们看看 provider 的内部实现代码</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">provider</span>(<span class="params">name, provider_</span>) </span>&#123;</div><div class="line">  <span class="keyword">if</span> (isFunction(provider_)) &#123;</div><div class="line">    provider_ = providerInjector.instantiate(provider_);</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">if</span> (!provider_.$get) &#123;</div><div class="line">    <span class="keyword">throw</span> <span class="built_in">Error</span>(<span class="string">'Provider '</span> + name + <span class="string">' must define $get factory method.'</span>);</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> providerCache[name + providerSuffix] = provider_;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>可以看到 provider 的基本原则就是通过实现 $get 方法来进行单例注入，使用时获得的就是 $get 执行后的结果。</p>
+<h2 id="factory"><a href="#factory" class="headerlink" title="factory"></a>factory</h2><p>那如果每次都要写一个 $get 是不是很麻烦？ OK，所以我们有了 factory。 factory 可以说是 provider 的变种， 方法中的第二个参数就是 $get 中的内容。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 定义 factory </span></div><div class="line">$provide.factory(<span class="string">'dd'</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123; </div><div class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Date</span>();</div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="comment">// 使用</span></div><div class="line">app.controller(<span class="string">'MainCtrl'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">$scope, dd</span>) </span>&#123;</div><div class="line">  $scope.mydate = dd;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>factory 的实现源代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">factory</span>(<span class="params">name, factoryFn</span>) </span>&#123; </div><div class="line">  <span class="keyword">return</span> provider(name, &#123; </div><div class="line">    <span class="attr">$get</span>: factoryFn </div><div class="line">  &#125;); </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="service"><a href="#service" class="headerlink" title="service"></a>service</h2><p>在 factory 的例子中我们还是需要 new 一个对象返回，而 service 就更简单了，这一步都帮你省了， 他的第二个参数就是你要返回的对象类， 也就是 new 的哦给你工作都不用你做了。够清爽吧？</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 定义 service </span></div><div class="line">$provide.service(<span class="string">'dd'</span>, <span class="built_in">Date</span>);</div></pre></td></tr></table></figure>
+<p>下面是 service 的实现源代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">service</span>(<span class="params">name, constructor</span>) </span>&#123;</div><div class="line">  <span class="keyword">return</span> factory(name, [<span class="string">'$injector'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">$injector</span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> $injector.instantiate(<span class="keyword">constructor</span>);</div><div class="line">  &#125;]);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>然后 factory 和 service 带来代码精简的同时也损失了一些特性。 provider 定义的服务是可以通过模块 config 来配置的。</p>
+</div>
+
+    <footer>
+    </footer>
+</article>
+
+
+  <section id="comments">
+    <!-- 多说评论框 start -->
+    <div class="ds-thread" data-thread-key="post-provider-factory-and-service-in-angularjs" data-title="Angularjs 中的 provider, factory 和 service" data-url="http://zhex.me/blog/2013/08/03/provider-factory-and-service-in-angularjs/"></div>
+    <!-- 多说评论框 end -->
+    <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+    <script type="text/javascript">
+    var duoshuoQuery = {short_name:'zhex'};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0] 
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+      </script>
+    <!-- 多说公共JS代码 end -->
+  </section>
+
+
+</section>
+
+    <footer id="footer">
+    &copy;2016 ZheX, Powered by <a href="http://hexo.io">Hexo</a>
+</footer>
+
+
+    
+</body>
+</html>

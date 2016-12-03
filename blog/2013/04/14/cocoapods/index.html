@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh_CN">
+<head>
+	<meta charset="UTF-8">
+
+<title>CocoaPods</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+</head>
+<body>
+    <header id="header">
+    <ul class="nav">
+        <li><a href="/archives">归档</a></li>
+        <li><a href="/about">关于</a></li>
+    </ul>
+
+    <div class="logo"><a href="/">ZheX.me</a></div>
+</header>
+
+
+    <section id="main"><article>
+    <header>
+        <h1>CocoaPods</h1>
+        <div class="info">
+            <time datetime="2013-04-13T23:08:00.000Z" itemprop="datePublished">2013-04-14</time>
+
+            
+    <div class="article-category">
+    <a class="article-category-link" href="/categories/Objective-c/">Objective-c</a>
+    </div>
+
+
+        </div>
+    </header>
+
+    <div class="article-entry"><p>在 ruby 中用惯了 gem， python 中有 easy_install 和 pip。 总希望开发 ios 应用的时候也可以有这样方便的包管理工具可以简化自己的开发流程。非常幸运，最近知道了 <a href="https://github.com/CocoaPods/CocoaPods" target="_blank" rel="external">CocoaPods</a>, 一个为 mac 和 ios 开发者提供的包第三方包管理工具。</p>
+<p>安装 cocoapods 需要 ruby gem 的支持。 这个应该不是问题， mac 系统自带 ruby。</p>
+<p>直接命令行运行：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">gem install cocoapods</div></pre></td></tr></table></figure>
+<p>我们可以用 <strong>pod list</strong> 命令列出可以被安装的插件列表， 非常长。 所以更多时候我们可以用 <strong>pod search ‘keyword’</strong> 命令来找出我们需要的插件。</p>
+<p>和 ruby gem 一样，我们需要在项目目录下建立一个 Podfile （对应 ruby 中的 Gemfile）。 格式如下：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">platform <span class="symbol">:ios</span></div><div class="line">pod <span class="string">'JSONKit'</span>,       <span class="string">'~&gt; 1.4'</span></div><div class="line">pod <span class="string">'Reachability'</span>,  <span class="string">'~&gt; 3.0.0'</span></div><div class="line">pod <span class="string">'ASIHTTPRequest'</span></div><div class="line">pod <span class="string">'RegexKitLite'</span></div></pre></td></tr></table></figure>
+<p>是不是和 Gemfile 很类似？ 完成后在命令行运行 ：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pod install</div></pre></td></tr></table></figure>
+<p>最后我们需要用 pod 生成的 .xcworkspace 文件来代替 xcode 默认的 .xcodeproj 来启动项目就可以了。</p>
+<p>##原理</p>
+<ol>
+<li>Pods 项目最终会编译成一个名为 libPods.a 的文件，主项目只需要依赖这个.a文件即可。</li>
+<li>对于资源文件，CocoaPods 提供了一个名为 Pods-resources.sh 的 bash 脚本，该脚本在每次项目编译的时候都会执行，将第三方库的各种资源文件复制到目标目录中。</li>
+<li>CocoaPods 通过一个名为 Pods.xcconfig 的文件来在编译时设置所有的依赖和参数。</li>
+</ol>
+</div>
+
+    <footer>
+    </footer>
+</article>
+
+
+  <section id="comments">
+    <!-- 多说评论框 start -->
+    <div class="ds-thread" data-thread-key="post-cocoapods" data-title="CocoaPods" data-url="http://zhex.me/blog/2013/04/14/cocoapods/"></div>
+    <!-- 多说评论框 end -->
+    <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+    <script type="text/javascript">
+    var duoshuoQuery = {short_name:'zhex'};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0] 
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+      </script>
+    <!-- 多说公共JS代码 end -->
+  </section>
+
+
+</section>
+
+    <footer id="footer">
+    &copy;2016 ZheX, Powered by <a href="http://hexo.io">Hexo</a>
+</footer>
+
+
+    
+</body>
+</html>

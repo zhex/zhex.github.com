@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh_CN">
+<head>
+	<meta charset="UTF-8">
+
+<title>加速编译速度，使用 Gulp 代替 Grunt</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+</head>
+<body>
+    <header id="header">
+    <ul class="nav">
+        <li><a href="/archives">归档</a></li>
+        <li><a href="/about">关于</a></li>
+    </ul>
+
+    <div class="logo"><a href="/">ZheX.me</a></div>
+</header>
+
+
+    <section id="main"><article>
+    <header>
+        <h1>加速编译速度，使用 Gulp 代替 Grunt</h1>
+        <div class="info">
+            <time datetime="2014-05-08T07:33:00.000Z" itemprop="datePublished">2014-05-08</time>
+
+            
+    <div class="article-category">
+    <a class="article-category-link" href="/categories/前端开发/">前端开发</a>
+    </div>
+
+
+        </div>
+    </header>
+
+    <div class="article-entry"><p>用了差不多一年的 <a href="http://www.gruntjs.com" target="_blank" rel="external">grunt</a>，体会到 grunt 的强大，的确帮助我们团队在前端的开发过程节约了很多时间，不过对 grunt 的执行速度我还是有点不满意。 </p>
+<p>我是模块化开发的推崇者， 所以在开发过程中我喜欢把不同的模块写入多个文件， 在 html 页面中只是引入合并/编译后的文件。在后台用 connect ＋ watch 开启服务器监听，实时合并编译，配合 livereload，这样就能免去在增加一个新模块文件的时候，我还要记得去 html 中引入该文件。而此时 grunt 的执行速度却满足不了我的要求，经常我 <code>CMD＋S</code> 以后要等待3，4秒文件才编译完成（我用的是SSD哦）。本来为了方便开发，而现在我的时间都在等待中度过了。</p>
+<p>最近我发现了 <a href="http://www.gulpjs.com" target="_blank" rel="external">gulp</a>， 他借助 nodejs 中优秀的 stream 特性，把多个 task 之间用数据流联系了起来。以往我们在 grunt 中多个 task 顺序执行常常需要借助一个 tmp 文件作为过度，而在 gulp 中直接读取上一个 task 返回的流就可以了，这样减少了一次读文件的时间，大大提高了执行效率。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// sample gulpfile</span></div><div class="line"><span class="keyword">var</span> path = <span class="built_in">require</span>(<span class="string">'path'</span>),</div><div class="line">    gulp = <span class="built_in">require</span>(<span class="string">'gulp'</span>),</div><div class="line">    plugins = <span class="built_in">require</span>(<span class="string">'gulp-load-plugins'</span>)();</div><div class="line"></div><div class="line"><span class="comment">//.......</span></div><div class="line"></div><div class="line">gulp.task(<span class="string">'script'</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> gulp.src(paths.scripts)</div><div class="line">        .pipe(plugins.concat(<span class="string">'all.js'</span>))</div><div class="line">        .pipe(gulp.dest(<span class="string">'app/js'</span>))</div><div class="line">        .pipe(plugins.connect.reload());</div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="comment">//......</span></div><div class="line"></div><div class="line">gulp.task(<span class="string">'default'</span>, [<span class="string">'script'</span>]);</div></pre></td></tr></table></figure>
+<p>把工具替换成 gulp 以后， 同样的合并任务现在只要600ms就可以完成。一下子感觉到懒人的世界那个快乐啊。</p>
+<p>另外， gulpfile 的编写更像是在写 js 代码，而不是 grunt 的 json 配置方式，同样的任务 gulpfile 明显要简约很多。相对 gulp， grunt 现在最大的优势就是庞大的社区和丰富的插件。听说 grunt 也将在 0.5 版本以后用流的方式来实现 task 之间的关联。如果 gulp 的现有插件能够满足你的需求，强烈建议在 grunt 发布新版本前试试 gulp。</p>
+</div>
+
+    <footer>
+    </footer>
+</article>
+
+
+  <section id="comments">
+    <!-- 多说评论框 start -->
+    <div class="ds-thread" data-thread-key="post-using-gulp-to-replace-grunt" data-title="加速编译速度，使用 Gulp 代替 Grunt" data-url="http://zhex.me/blog/2014/05/08/using-gulp-to-replace-grunt/"></div>
+    <!-- 多说评论框 end -->
+    <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+    <script type="text/javascript">
+    var duoshuoQuery = {short_name:'zhex'};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0] 
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+      </script>
+    <!-- 多说公共JS代码 end -->
+  </section>
+
+
+</section>
+
+    <footer id="footer">
+    &copy;2016 ZheX, Powered by <a href="http://hexo.io">Hexo</a>
+</footer>
+
+
+    
+</body>
+</html>

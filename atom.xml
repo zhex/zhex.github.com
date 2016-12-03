@@ -1,0 +1,674 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>ZheX.me</title>
+  <subtitle>Digging Tech</subtitle>
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="http://zhex.me/"/>
+  <updated>2016-12-03T16:13:43.741Z</updated>
+  <id>http://zhex.me/</id>
+  
+  <author>
+    <name>ZheX</name>
+    
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>理解 Angular Scope</title>
+    <link href="http://zhex.me/blog/2014/08/07/angular-scope/"/>
+    <id>http://zhex.me/blog/2014/08/07/angular-scope/</id>
+    <published>2014-08-07T01:55:00.000Z</published>
+    <updated>2016-12-03T16:13:43.741Z</updated>
+    
+    <content type="html"><![CDATA[<p>很多人开始用 <code>angular</code> 的时候都觉得 <code>$scope</code> 这个玩意很神奇，但又很难理解其工作原理，所以我希望通过这篇文章来说说 angular scope，让大家可以更好的写出 angular 代码。</p>
+<h2 id="rootScope"><a href="#rootScope" class="headerlink" title="$rootScope"></a>$rootScope</h2><p>根据词义就能了解到 $rootScope 是所有 $scope 的顶级节点，所有的 $scope 都是继承自他。 $rootScope 会被创建在我们设置 <code>ng-app</code> 属性的 DOM 元素上。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">ng-app</span>&gt;</span> <span class="comment">&lt;!-- 在这里创建了 $rootScope --&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>我们可以很方便的开打 console，测试打印节点的 scope： </p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 在 console 打印 $rootScope</span></div><div class="line">angular.element(<span class="built_in">document</span>.documentElement).scope()</div></pre></td></tr></table></figure>
+<p>如果我们来一段这样的代码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;!doctype html&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">ng-app</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.13/angular.min.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">label</span>&gt;</span>Name:<span class="tag">&lt;/<span class="name">label</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"text"</span> <span class="attr">ng-model</span>=<span class="string">"yourName"</span> <span class="attr">placeholder</span>=<span class="string">"Enter a name here"</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">hr</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">h1</span>&gt;</span>Hello &#123;&#123;yourName&#125;&#125;!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>这里有一个 叫 ng-model 的 directive ， directive 的工作就是把DOM 元素和 scope连接起来，让开发者在这里对 DOM 元素的行为进行操作。 比如这里的 ng-model 就把 input 元素绑定了 $rootScope 上，并加入了一个 <code>yourName</code> 的属性.</p>
+<p>angular 还会为元素加上 change 事件，当 change 事件被触发的时候，angular 会用 input 元素的值去更新 scope 中 <code>yourName</code> 的值，并且通知其他相关元素作更新。 这一切都是由 angular 的 dirty checking 机制完成的。在这里原本 $rootScope 是没有 ｀yourName` 对象的， angular 会自动为你创建。 </p>
+<p>这就是所谓的双向数据绑定（2-way data binding），当改变 model 的时候， 页面上的相关元素都会响应的变化。</p>
+<h2 id="Controller-中的-scope"><a href="#Controller-中的-scope" class="headerlink" title="Controller 中的 $scope"></a>Controller 中的 $scope</h2><p>要知道 $scope 在 controller 中如何工作的，肯定先要知道 controller 是干什么的。 在 angular 中 controller 就是把 数据 model 传送到 view 层提供展示。非常简单，直接。 当 view 问 controller 要数据的时候，controller 就会根据 view 的要求，乖乖的把数据上交。</p>
+<p>通常我们都希望让 controller 保持短小精悍，便于测试。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">angular.module(<span class="string">"MyModule"</span>)</div><div class="line">    .controller(<span class="string">"FooCtrl"</span>, <span class="function"><span class="keyword">function</span>(<span class="params">$scope</span>) </span>&#123;</div><div class="line">        $scope.user = &#123;</div><div class="line">            <span class="attr">name</span>: <span class="string">"Foo"</span></div><div class="line">        &#125;;</div><div class="line"></div><div class="line">        $scope.doFoo = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">            <span class="comment">// Do something!</span></div><div class="line">        &#125;;</div><div class="line">    &#125;);</div></pre></td></tr></table></figure>
+<p>当我们用 <code>ng-controller</code> 绑定页面元素的时候，我们实际创建了一个继承自 $rootScope 的 子 scope。</p>
+<h2 id="嵌套式-Controller"><a href="#嵌套式-Controller" class="headerlink" title="嵌套式 Controller"></a>嵌套式 Controller</h2><p>我们知道 angular 中的 controller 是可以嵌套的，controller 创建的 scope 有可能继承自其他的 scope， 所以我们在使用的时候也要非常小心。当我们在父级 scope 上创建原始值（string， number， boolean）的时候，子级 scope 并不能很好的维护他。 当子级 scope 去修改父级 scope 的原始值的时候， angular 会打破继承， 在子级 scope 复制一个值。 所以我们最好使用对象， 比如<code>ng-model=&quot;user.name&quot;</code>, 这样就不会打破继承关系。</p>
+<p>另外我们可以使用 <code>controllerAs</code> 来解决继承问题，比如如下代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">angular.module(<span class="string">"MyModule"</span>)</div><div class="line">    .controller(<span class="string">"FirstCtrl"</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">        <span class="keyword">this</span>.user = &#123;</div><div class="line">            <span class="attr">name</span>: <span class="string">"Dr. Evil"</span></div><div class="line">        &#125;;</div><div class="line">    &#125;)</div><div class="line">    .controller(<span class="string">"SecondCtrl"</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">        <span class="keyword">this</span>.lair = &#123;</div><div class="line">            <span class="attr">name</span>: <span class="string">"Underground"</span></div><div class="line">        &#125;;</div><div class="line">    &#125;);</div></pre></td></tr></table></figure>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">ng-controller</span>=<span class="string">"FirstController as first"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">ng-controller</span>=<span class="string">"SecondController as second"</span>&gt;</span></div><div class="line">        &#123;&#123;first.user.name&#125;&#125;</div><div class="line">        &#123;&#123;second.lair.name&#125;&#125;</div><div class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>angular 在 1.2 版本后可以通过 controllerAs 提供一个 controller 的昵称很好的解决继承问题，开发者在使用的时候可以明确指定要使用哪个 scope 中的对象。</p>
+<p>其实刚才的代码就是把 $scope.first 挂上了 controller 的 this，并没有多么神奇，上面的代码等同于：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">angular.module(<span class="string">"MyModule"</span>)</div><div class="line">    .controller(<span class="string">"FirstCtrl"</span>, <span class="function"><span class="keyword">function</span>(<span class="params">$scope</span>) </span>&#123;</div><div class="line">        $scope.first = <span class="keyword">this</span>;</div><div class="line"></div><div class="line">        $scope.first.user = &#123;</div><div class="line">            <span class="attr">name</span>: <span class="string">"Dr. Evil"</span></div><div class="line">        &#125;;</div><div class="line">    &#125;)</div><div class="line">    .controller(<span class="string">"SecondCtrl"</span>, <span class="function"><span class="keyword">function</span>(<span class="params">$scope</span>) </span>&#123;</div><div class="line">        $scope.second = <span class="keyword">this</span>;</div><div class="line"></div><div class="line">        $scope.second.lair = &#123;</div><div class="line">            <span class="attr">name</span>: <span class="string">"Underground"</span></div><div class="line">        &#125;;</div><div class="line">    &#125;);</div></pre></td></tr></table></figure>
+<p>使用 controllerAs 是不是会觉得逻辑更清晰一点？</p>
+<h2 id="directive-中的-scope"><a href="#directive-中的-scope" class="headerlink" title="directive 中的 $scope"></a>directive 中的 $scope</h2><p>创建自定义 directive 是一个经常容易出问题的地方，这却恰恰又是 angular 的强大所在。首先我们在创建 directive 的时候可以通过 <code>scope</code> 属性来设置该 directive scope 的控制范围。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">angular.module(<span class="string">"MyModule"</span>)</div><div class="line">  .directive(<span class="string">"MyDirective"</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> &#123;</div><div class="line">      <span class="attr">scope</span>: <span class="string">"false|true|&#123;&#125;"</span></div><div class="line">    &#125;</div><div class="line">  &#125;);</div></pre></td></tr></table></figure>
+<p>默认情况下 <code>scope: flase</code>。</p>
+<p>当我们想创建可复用的 directive 的时候， scope 的默认设置可能是一个危险的信号。因为此时 directive 其实是使用父级的 scope， 当我们想在 directive 创建或操作属性时候，其实是在 父级 scope 进行，这样在复用性上会有潜在的问题。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">angular.module(<span class="string">"MyModule"</span>)</div><div class="line">  .directive(<span class="string">"MyDirective"</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> &#123;</div><div class="line">      <span class="attr">scope</span>: <span class="literal">false</span>,</div><div class="line">      <span class="attr">link</span>: <span class="function"><span class="keyword">function</span>(<span class="params">scope, el</span>) </span>&#123;</div><div class="line">        scope.myNewProp = <span class="string">"其实我是上面scope的"</span>;</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">  &#125;);</div></pre></td></tr></table></figure>
+<p>当然，我们也可以把 scope 设置成 true。 这样 directive 的行为就和 ng-controller 一样了， 他会创建一个全新的 子级 scope 继承自父级。 这样你就可以访问父级 scope 的属性，也可以在自己的 scope 中创建新属性。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">angular.module(<span class="string">"MyModule"</span>)</div><div class="line">  .directive(<span class="string">"MyDirective"</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> &#123;</div><div class="line">      <span class="attr">scope</span>: <span class="literal">true</span>,</div><div class="line">      <span class="attr">link</span>: <span class="function"><span class="keyword">function</span>(<span class="params">scope, el</span>) </span>&#123;</div><div class="line">        scope.someParentObject.foo = <span class="string">"我还是可以改变父级元素的属性"</span>;</div><div class="line"></div><div class="line">        scope.someLocalObject = &#123;</div><div class="line">          <span class="attr">foo</span>: <span class="string">"我是本地scope的属性"</span></div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">  &#125;);</div></pre></td></tr></table></figure>
+<p>我们可以从上面代码看到，当我们访问父级属性的时候，我们还是可以对父级属性修改，当创建新属性的时候，我们其实是在自己新的 scope 中创建。</p>
+<p>相对于来说， isolate scope 就要附在一些。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">angular.module(<span class="string">"MyModule"</span>)</div><div class="line">  .directive(<span class="string">"MyDirective"</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> &#123;</div><div class="line">      <span class="attr">scope</span>: &#123;</div><div class="line">        <span class="attr">property</span>: <span class="string">"="</span>,</div><div class="line">        <span class="attr">expression</span>: <span class="string">"@"</span></div><div class="line">        action: <span class="string">"&amp;"</span></div><div class="line">      &#125;,</div><div class="line">      <span class="attr">link</span>: <span class="function"><span class="keyword">function</span>(<span class="params">scope, el</span>) </span>&#123;</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">  &#125;);</div></pre></td></tr></table></figure>
+<p>我们可以把上面代码中 scope 设置的三种符号认为是三种过滤器，下面让我们看看这三种过滤器各自的效果。</p>
+<h3 id="scope"><a href="#scope" class="headerlink" title="scope: ="></a>scope: =</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">angular.module(<span class="string">"MyApp"</span>, [])</div><div class="line">  .controller(<span class="string">"UserCtrl"</span>, <span class="function"><span class="keyword">function</span>(<span class="params">$scope</span>) </span>&#123;</div><div class="line">    $scope.loggedInUser = &#123;</div><div class="line">      <span class="attr">name</span>: <span class="string">"Austin Powers"</span></div><div class="line">    &#125;</div><div class="line">  &#125;)</div><div class="line">  .directive(<span class="string">"myUserDirective"</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> &#123;</div><div class="line">      <span class="attr">restrict</span>: <span class="string">"E"</span>,</div><div class="line">      <span class="attr">template</span>: <span class="string">"&lt;input ng-model='user.name' /&gt;&lt;/div&gt;"</span>,</div><div class="line">      <span class="attr">scope</span>: &#123;</div><div class="line">        <span class="attr">user</span>: <span class="string">"="</span></div><div class="line">      &#125;,</div><div class="line">      <span class="attr">link</span>: <span class="function"><span class="keyword">function</span>(<span class="params">scope</span>) </span>&#123;</div><div class="line">        <span class="built_in">console</span>.log(scope.user) <span class="comment">// &#123; name: "Austin Powers" &#125;</span></div><div class="line">      &#125;</div><div class="line">    &#125;;</div><div class="line">  &#125;);</div></pre></td></tr></table></figure>
+<p>有了上面的代码， 我们就可以这样<code>&lt;my-user-directive user=&quot;loggedInUser&quot;&gt;&lt;/my-user-directive&gt;</code>使用 directive 了。 通过“＝”我们可以把父级的<code>loggedInUser</code>属性作为<code>user</code>传到子级，并且在 direcitve 和父级 scope 间建立双向绑定。使用“＝”的时候，传值永远是字符串值，就像这里的 loggedInUser 是父级 scope 的属性。如果我们改变<code>ng-model=&quot;user.name&quot;</code>的值，父级 UserCtrl 中的 loggedInUser 也会随之改变。</p>
+<h3 id="scope-1"><a href="#scope-1" class="headerlink" title="scope: @"></a>scope: @</h3><p>相对于 “＝” 的双向绑定， “@” 实现的是单向绑定，对 direcitve scope 中属性的修改，不会影响到父级 scope 的属性。属性的传递是字符串，或者是在父级生成的字符串。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">angular.module(<span class="string">"MyApp"</span>, [])</div><div class="line">  .controller(<span class="string">"UserCtrl"</span>, <span class="function"><span class="keyword">function</span>(<span class="params">$scope</span>) </span>&#123;</div><div class="line">    $scope.loggedInUser = &#123;</div><div class="line">      <span class="attr">firstName</span>: <span class="string">"zhe"</span>,</div><div class="line">      <span class="attr">lastName</span>: <span class="string">"xu"</span></div><div class="line">    &#125;;</div><div class="line">  &#125;)</div><div class="line">  .directive(<span class="string">"myUserDirective"</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> &#123;</div><div class="line">      <span class="attr">restrict</span>: <span class="string">"E"</span>,</div><div class="line">      <span class="attr">template</span>: <span class="string">"&#123;&#123;fullName&#125;&#125;"</span>,</div><div class="line">      <span class="attr">scope</span>: &#123;</div><div class="line">        <span class="attr">fullName</span>: <span class="string">"@name"</span></div><div class="line">      &#125;</div><div class="line">    &#125;;</div><div class="line">  &#125;);</div></pre></td></tr></table></figure>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">my-user-directive</span> <span class="attr">name</span>=<span class="string">"&#123;&#123;loggedInUser.firstName&#125;&#125; &#123;&#123;loggedInUser.lastName&#125;&#125;"</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">my-user-directive</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>上例中我们在父级 scope 拼装了一个 name 属性赋给 directive 的 fullName, fullName 会随着父级 scope 中的 firstName 和 lastName 改变而改变。</p>
+<h3 id="scope-amp"><a href="#scope-amp" class="headerlink" title="scope: &amp;"></a>scope: &amp;</h3><p>“&amp;” 过滤器最牛的地方是可以直接调用父级 scope 的表达式</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">angular.module(<span class="string">"MyApp"</span>, [])</div><div class="line">  .controller(<span class="string">"MathCtrl"</span>, <span class="function"><span class="keyword">function</span>(<span class="params">$scope</span>) </span>&#123;</div><div class="line">    $scope.add = <span class="function"><span class="keyword">function</span>(<span class="params">x, y</span>) </span>&#123;</div><div class="line">      <span class="keyword">return</span> x + y;</div><div class="line">    &#125;;</div><div class="line">  &#125;)</div><div class="line">  .directive(<span class="string">"myAddThings"</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> &#123;</div><div class="line">      <span class="attr">restrict</span>: <span class="string">"E"</span>,</div><div class="line">      <span class="attr">template</span>: <span class="string">"&#123;&#123;result&#125;&#125;"</span>,</div><div class="line">      <span class="attr">scope</span>: &#123;</div><div class="line">        <span class="attr">localFn</span>: <span class="string">"&amp;fn"</span></div><div class="line">      &#125;,</div><div class="line">      <span class="attr">link</span>: <span class="function"><span class="keyword">function</span>(<span class="params">scope</span>) </span>&#123;</div><div class="line">        scope.result = scope.localFn(&#123;</div><div class="line">          <span class="attr">x</span>: <span class="number">1</span>,</div><div class="line">          <span class="attr">y</span>: <span class="number">2</span></div><div class="line">        &#125;);</div><div class="line">      &#125;</div><div class="line">    &#125;;</div><div class="line">  &#125;);</div></pre></td></tr></table></figure>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">my-add-things</span> <span class="attr">fn</span>=<span class="string">"add(x, y)"</span>&gt;</span><span class="tag">&lt;/<span class="name">my-add-things</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>上面的例子中， 我们把父级的 add 方法作为表达式写入 html，directive 通过 “&amp;” 从父级 fn 继承表达式并赋给 localFn，然后我们就可以在dirctive 中使用 add 方法了， 而且可以直接传 dirctive scope 中的值进去。这个过滤器可以帮助我们更好的使用父级方法，如果几个不同的 directive 中需要用到公用方法，就可以用 “&amp;” 来避免重复定义。</p>
+<h2 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h2><p>学 angluar 的路漫漫兮，scope只是其中的一块小蛋糕，希望在整个学习过程中，这篇文章可以对你有帮助。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;很多人开始用 &lt;code&gt;angular&lt;/code&gt; 的时候都觉得 &lt;code&gt;$scope&lt;/code&gt; 这个玩意很神奇，但又很难理解其工作原理，所以我希望通过这篇文章来说说 angular scope，让大家可以更好的写出 angular 代码。&lt;/p&gt;
+&lt;h2 id
+    
+    </summary>
+    
+      <category term="前端开发" scheme="http://zhex.me/categories/%E5%89%8D%E7%AB%AF%E5%BC%80%E5%8F%91/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>加速编译速度，使用 Gulp 代替 Grunt</title>
+    <link href="http://zhex.me/blog/2014/05/08/using-gulp-to-replace-grunt/"/>
+    <id>http://zhex.me/blog/2014/05/08/using-gulp-to-replace-grunt/</id>
+    <published>2014-05-08T07:33:00.000Z</published>
+    <updated>2016-12-03T16:13:43.741Z</updated>
+    
+    <content type="html"><![CDATA[<p>用了差不多一年的 <a href="http://www.gruntjs.com" target="_blank" rel="external">grunt</a>，体会到 grunt 的强大，的确帮助我们团队在前端的开发过程节约了很多时间，不过对 grunt 的执行速度我还是有点不满意。 </p>
+<p>我是模块化开发的推崇者， 所以在开发过程中我喜欢把不同的模块写入多个文件， 在 html 页面中只是引入合并/编译后的文件。在后台用 connect ＋ watch 开启服务器监听，实时合并编译，配合 livereload，这样就能免去在增加一个新模块文件的时候，我还要记得去 html 中引入该文件。而此时 grunt 的执行速度却满足不了我的要求，经常我 <code>CMD＋S</code> 以后要等待3，4秒文件才编译完成（我用的是SSD哦）。本来为了方便开发，而现在我的时间都在等待中度过了。</p>
+<p>最近我发现了 <a href="http://www.gulpjs.com" target="_blank" rel="external">gulp</a>， 他借助 nodejs 中优秀的 stream 特性，把多个 task 之间用数据流联系了起来。以往我们在 grunt 中多个 task 顺序执行常常需要借助一个 tmp 文件作为过度，而在 gulp 中直接读取上一个 task 返回的流就可以了，这样减少了一次读文件的时间，大大提高了执行效率。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// sample gulpfile</span></div><div class="line"><span class="keyword">var</span> path = <span class="built_in">require</span>(<span class="string">'path'</span>),</div><div class="line">    gulp = <span class="built_in">require</span>(<span class="string">'gulp'</span>),</div><div class="line">    plugins = <span class="built_in">require</span>(<span class="string">'gulp-load-plugins'</span>)();</div><div class="line"></div><div class="line"><span class="comment">//.......</span></div><div class="line"></div><div class="line">gulp.task(<span class="string">'script'</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> gulp.src(paths.scripts)</div><div class="line">        .pipe(plugins.concat(<span class="string">'all.js'</span>))</div><div class="line">        .pipe(gulp.dest(<span class="string">'app/js'</span>))</div><div class="line">        .pipe(plugins.connect.reload());</div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="comment">//......</span></div><div class="line"></div><div class="line">gulp.task(<span class="string">'default'</span>, [<span class="string">'script'</span>]);</div></pre></td></tr></table></figure>
+<p>把工具替换成 gulp 以后， 同样的合并任务现在只要600ms就可以完成。一下子感觉到懒人的世界那个快乐啊。</p>
+<p>另外， gulpfile 的编写更像是在写 js 代码，而不是 grunt 的 json 配置方式，同样的任务 gulpfile 明显要简约很多。相对 gulp， grunt 现在最大的优势就是庞大的社区和丰富的插件。听说 grunt 也将在 0.5 版本以后用流的方式来实现 task 之间的关联。如果 gulp 的现有插件能够满足你的需求，强烈建议在 grunt 发布新版本前试试 gulp。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;用了差不多一年的 &lt;a href=&quot;http://www.gruntjs.com&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;grunt&lt;/a&gt;，体会到 grunt 的强大，的确帮助我们团队在前端的开发过程节约了很多时间，不过对 grunt 的执行速度我
+    
+    </summary>
+    
+      <category term="前端开发" scheme="http://zhex.me/categories/%E5%89%8D%E7%AB%AF%E5%BC%80%E5%8F%91/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>通过 monkey path 让 gridster 在 angular 中工作</title>
+    <link href="http://zhex.me/blog/2013/12/04/gridster-work-with-angular-by-monkey-path/"/>
+    <id>http://zhex.me/blog/2013/12/04/gridster-work-with-angular-by-monkey-path/</id>
+    <published>2013-12-04T13:27:00.000Z</published>
+    <updated>2016-12-03T16:13:43.741Z</updated>
+    
+    <content type="html"><![CDATA[<p><a href="http://www.gridster.net" target="_blank" rel="external">Gridster</a> 是一个非常酷的可拖拽的栅格插件。最近我也把他用到了我的项目中。然而 Gridster 的实现和 angular v1.2.3 格格不入，在删除栅格的时候总是会引发莫名其妙的错误。 </p>
+<p>经过研究后发现， Gridster 在初始化栅格的时候会重新 append 元素，而这个行为却会导致 ng-repeat 内的元素关系错乱。尝试了各种方法也无法使其工作，放弃这么好的插件又不甘心，好吧，开始动修改插件的念头吧。 直接修改插件肯定是不可取的方法， 因为我们项目中的插件都是用 <a href="http://bower.io/" target="_blank" rel="external">bower</a> 管理，直接修改插件会导致以后升级困难，不便于项目的维护，这可是丢了西瓜，拣了芝麻。所以这里我借鉴了 ruby 中的 monkey patch 方法来打补丁，这样不但可以保持原来的 gridster 插件完整，又可以方便的实现自己想要的改进。</p>
+<p>ok，现在让我们开工开始打 patch。</p>
+<p>发现主要问题出在 add_widget 这个方法上：</p>
+<figure class="highlight javascript"><figcaption><span>jquery.gridster.js</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">fn.add_widget = <span class="function"><span class="keyword">function</span>(<span class="params">html, size_x, size_y, col, row, max_size</span>) </span>&#123;</div><div class="line">  <span class="comment">// .......</span></div><div class="line"></div><div class="line">  <span class="keyword">var</span> $w = $(html).attr(&#123;</div><div class="line">    <span class="string">'data-col'</span>: pos.col,</div><div class="line">    <span class="string">'data-row'</span>: pos.row,</div><div class="line">    <span class="string">'data-sizex'</span> : size_x,</div><div class="line">    <span class="string">'data-sizey'</span> : size_y</div><div class="line">  &#125;).addClass(<span class="string">'gs-w'</span>).appendTo(<span class="keyword">this</span>.$el).hide();</div><div class="line"></div><div class="line">  <span class="comment">// ....</span></div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>现在我们创建 gridster.monkey_path.js 文件</p>
+<figure class="highlight javascript"><figcaption><span>gridster.monkey_path.js</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">(<span class="function"><span class="keyword">function</span> (<span class="params">$</span>) </span>&#123;</div><div class="line"></div><div class="line"><span class="comment">// 重命名原方法，以备其他用途</span></div><div class="line">$.Gridster.add_new_widget = $.Gridster.add_widget;</div><div class="line"></div><div class="line"><span class="comment">// 创建应用覆盖</span></div><div class="line">$.Gridster.add_widget = <span class="function"><span class="keyword">function</span>(<span class="params">html, size_x, size_y, col, row, max_size</span>) </span>&#123;</div><div class="line">  <span class="comment">// .......</span></div><div class="line"></div><div class="line">  <span class="keyword">var</span> $w = $(html).attr(&#123;</div><div class="line">    <span class="string">'data-col'</span>: pos.col,</div><div class="line">    <span class="string">'data-row'</span>: pos.row,</div><div class="line">    <span class="string">'data-sizex'</span> : size_x,</div><div class="line">    <span class="string">'data-sizey'</span> : size_y</div><div class="line">  &#125;).addClass(<span class="string">'gs-w'</span>).hide(); <span class="comment">// 除去 appendTo(this.$el)</span></div><div class="line"></div><div class="line">  <span class="comment">// ....</span></div><div class="line">&#125;;</div><div class="line"></div><div class="line">&#125;)(jQuery);</div></pre></td></tr></table></figure>
+<p>最后我们按照顺序加载 js 文件， 一切就搞定了， gridster 现在可以在 angular 中工作了。<br><figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"bower_components/gridster/dist/jquery.gridster.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"scripts/utils/gridster.monkey_patch.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div></pre></td></tr></table></figure></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;&lt;a href=&quot;http://www.gridster.net&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Gridster&lt;/a&gt; 是一个非常酷的可拖拽的栅格插件。最近我也把他用到了我的项目中。然而 Gridster 的实现和 angular v1.
+    
+    </summary>
+    
+      <category term="前端开发" scheme="http://zhex.me/categories/%E5%89%8D%E7%AB%AF%E5%BC%80%E5%8F%91/"/>
+    
+      <category term="AngularJS" scheme="http://zhex.me/categories/%E5%89%8D%E7%AB%AF%E5%BC%80%E5%8F%91/AngularJS/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>不错的创业游戏: Hipster CEO</title>
+    <link href="http://zhex.me/blog/2013/11/27/good-game-hipster-ceo/"/>
+    <id>http://zhex.me/blog/2013/11/27/good-game-hipster-ceo/</id>
+    <published>2013-11-27T14:24:00.000Z</published>
+    <updated>2016-12-03T16:13:43.741Z</updated>
+    
+    <content type="html"><![CDATA[<img src="/images/blog/hipster-ceo.jpg">
+<p>今天在网上看到了个创业类游戏：Hipster CEO，马上就在 app store 上买了， 然后整整一天都沉浸这个游戏中。</p>
+<p>在游戏中玩家需要扮演创业公司的CEO，制作一款应用，把它推向市场。 上手我就创办了一个公司 Zeal works，做了个项目管理类的应用，手上 1.5w资金，完成10个 features，开卖，然后就没有然后了，我破产了 ….., 一切感觉是这么的真实，残酷。</p>
+<p>经过了第一次创业失败的教训，我明白了上来就要靠自己，请人，实在太贵了，又没效率。 另外明白了市场推广的重要性，产品需要经常在社交网络曝光，需要适当的广告投入来提高曝光率，打开市场。 因为上来就自己一个人，所以不用做 sales 的工作，原始用户积累来自于社区和推广。 马上我东山再起，随着上述思路的发展经营，很快产品有了用户群， 有投资人找过来了，根据平时看创业累书籍的经验需要最大程度的控制股权， 不能让投资人拿太多。 钱有了，招人扩张，产品开发速度更不上了，员工工资不满意了， 竞争对手越来越多了，一切的问题就好像在真实社会这中创业一样。虽然是游戏，却也让我学到了很多，对创业的事情有了很多新的认识。现阶段公司发展起来了，也打败了很多同行竞争者，但是高额的成本，较低的收入，公司还只是靠着几轮融资活着，虽然还可以拿到后续更大的融资，这个阶段让我考虑如何让公司真正实现盈利。</p>
+<p>玩了一天的成果就这些了，听说以后还可以把公司卖掉。明天继续努力，尝试下不同的经营方式。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;img src=&quot;/images/blog/hipster-ceo.jpg&quot;&gt;
+&lt;p&gt;今天在网上看到了个创业类游戏：Hipster CEO，马上就在 app store 上买了， 然后整整一天都沉浸这个游戏中。&lt;/p&gt;
+&lt;p&gt;在游戏中玩家需要扮演创业公司的CEO，制作一款应用，
+    
+    </summary>
+    
+      <category term="游戏" scheme="http://zhex.me/categories/%E6%B8%B8%E6%88%8F/"/>
+    
+      <category term="startup" scheme="http://zhex.me/categories/%E6%B8%B8%E6%88%8F/startup/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>为什么我们的 Angular 应用总是很慢</title>
+    <link href="http://zhex.me/blog/2013/11/22/why-out-angular-app-is-slow/"/>
+    <id>http://zhex.me/blog/2013/11/22/why-out-angular-app-is-slow/</id>
+    <published>2013-11-22T06:29:00.000Z</published>
+    <updated>2016-12-03T16:13:43.741Z</updated>
+    
+    <content type="html"><![CDATA[<p>AngularJS 作为 Google 开源的 JS 前端框架最近一直很火。 在 html 中加上几个标签， 根据格式写几句 javascript 代码， 一个单页应用就总跑起来了。其方便的上手体验， 双向数据绑定等特性给了很多前端开发者很好的亲切感。 而然随着大家逐渐用 angular 开始开发稍大一点的项目，发现做出来的应用总是非常慢，这完全颠覆了 angular 上来时给我们描绘的美好画面。既然遇到问题就要解决，让我们来看看为什么我们的 angular 应用这么慢。</p>
+<h2 id="Dirty-checking"><a href="#Dirty-checking" class="headerlink" title="Dirty checking"></a>Dirty checking</h2><p>为了实现页面数据的实时同步，angular 采用 dirty checking 来遍历绑定的对象，比较 value 现在和过去的值。如果 value 有发生变化，就触发 change 事件。<br>Digest 是执行 dirty checking 的机制， 由 $digest() 触发。 $digest() 每50ms执行一次，触发所属 scope 和其子 scope 的 dirty checking， dirty checking 又会触发 $watch(), 使整个 angular 中绑定的对象活起来。</p>
+<p>正是因为这样频繁的触发，使得 dirty checking 有可能成为性能问题的根源。 官方给出的数据是 angular 在2000个数据绑定以上才会出现性能问题， 这个数字在大多数情况下肯定是够用了，然而在一些特殊情况，比如 grid table， 大数据量的 dropdown list，或者大数据量的列表中， 2000个数据绑定很快就会被消耗完了。</p>
+<h2 id="scope-定时器回收"><a href="#scope-定时器回收" class="headerlink" title="$scope 定时器回收"></a>$scope 定时器回收</h2><p>当很多新手开始接触 angular 的时候并没有很好的了解其运行机制，所以经常会为了达到一些业务需求上的目的而在代码中添加定时器，并且很多人都没有对定时器作回收的习惯。在传统的 web 开发中，这常常不是问题，因为一旦页面切换，整个页面上的对象也都消失了。 而在 angular 中，所有元素都存活在单页面上，当 scope 的生命周期结束时没有办法自动清楚这些自定义的定时器，久而久之， 页面中存活着大量已经过期的定时器，内存被占用也越来越厉害。</p>
+<h2 id="开发中需要避免的事"><a href="#开发中需要避免的事" class="headerlink" title="开发中需要避免的事"></a>开发中需要避免的事</h2><p>既然已经明白了 angular 慢的原因，我们就需要在开发过程中做一些调整，避免一些导致慢的问题出现。</p>
+<h3 id="1-不要用数据绑定来渲染列表"><a href="#1-不要用数据绑定来渲染列表" class="headerlink" title="1. 不要用数据绑定来渲染列表"></a>1. 不要用数据绑定来渲染列表</h3><p>既然数据绑定时性能问题的根源， 我们就应该避免在特定的情况下使用，大数据列表和 grid table 就是。特别时在那些只是为了作展示，而不需要对数据做动态更新的情况下，就别用了。没有了angular， 我们还是可以用 handlebars 之类的模版引擎加上 jquery 来实现。</p>
+<h3 id="2-不要用内联方式实行数据"><a href="#2-不要用内联方式实行数据" class="headerlink" title="2. 不要用内联方式实行数据"></a>2. 不要用内联方式实行数据</h3><p>ng-repeat 会在每次执行 $digest 的时候执行模版内的方法，所以为了提高效率，不要直接在模版内使用函数过滤表达式，这样会拖慢整个应用。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">li</span> <span class="attr">ng-repeat</span>=<span class="string">"item in filteredItems()"</span>&gt;</span> // 错误的方法，函数会被频繁调用</div><div class="line"><span class="tag">&lt;<span class="name">li</span> <span class="attr">ng-repeat</span>=<span class="string">"item in items"</span>&gt;</span> // 建议使用方法</div></pre></td></tr></table></figure>
+<h3 id="3-使用数据缓存"><a href="#3-使用数据缓存" class="headerlink" title="3. 使用数据缓存"></a>3. 使用数据缓存</h3><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line">/* Controller */</div><div class="line">// 基础数据 </div><div class="line">var items = [&#123;name:"John", active:true &#125;, &#123;name:"Adam"&#125;, &#123;name:"Chris"&#125;, &#123;name:"Heather"&#125;]; </div><div class="line"></div><div class="line">// 初始化数据</div><div class="line">$scope.displayedItems = items;</div><div class="line"></div><div class="line">// 过滤缓存</div><div class="line">var filteredLists['active'] = $filter('filter)(items, &#123;"active" : true&#125;);</div><div class="line"></div><div class="line">// 实现过滤器</div><div class="line">$scope.applyFilter = function(type) &#123;</div><div class="line">    if (filteredLists.hasOwnProperty(type)&#123; // Check if filter is cached</div><div class="line">        $scope.displayedItems = filteredLists[type];</div><div class="line">    &#125; else &#123; </div><div class="line">        /* Non cached filtering */</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">// Reset filter</div><div class="line">$scope.resetFilter = function() &#123;</div><div class="line">    $scope.displayedItems = items;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">/* View */</div><div class="line"><span class="tag">&lt;<span class="name">button</span> <span class="attr">ng-click</span>=<span class="string">"applyFilter('active')"</span>&gt;</span>Select active<span class="tag">&lt;/<span class="name">button</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">ul</span>&gt;</span><span class="tag">&lt;<span class="name">li</span> <span class="attr">ng-repeat</span>=<span class="string">"item in displayedItems"</span>&gt;</span>&#123;&#123;item.name&#125;&#125;<span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;/<span class="name">ul</span>&gt;</span></div></pre></td></tr></table></figure>
+<h3 id="4-在使用额外的模版时，用-ng-if-代替-ng-show"><a href="#4-在使用额外的模版时，用-ng-if-代替-ng-show" class="headerlink" title="4. 在使用额外的模版时，用 ng-if 代替 ng-show"></a>4. 在使用额外的模版时，用 ng-if 代替 ng-show</h3><p>当通过模版或者 directive 来显示附加信息时，比如： 点击商品显示商品详细信息时， 应该使用 ng-if 代替 ng-show。 这可以减少页面内绑定对象的数量。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">li</span> <span class="attr">ng-repeat</span>=<span class="string">"item in items"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">p</span>&gt;</span> &#123;&#123; item.title &#125;&#125; <span class="tag">&lt;/<span class="name">p</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">button</span> <span class="attr">ng-click</span>=<span class="string">"item.showDetails = !item.showDetails"</span>&gt;</span>Show details<span class="tag">&lt;/<span class="name">buttons</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">ng-if</span>=<span class="string">"item.showDetails"</span>&gt;</span></div><div class="line">        &#123;&#123;item.details&#125;&#125;</div><div class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">li</span>&gt;</span></div></pre></td></tr></table></figure>
+<h3 id="5-不要使用-ng-mouseenter-和-ng-mouseleave"><a href="#5-不要使用-ng-mouseenter-和-ng-mouseleave" class="headerlink" title="5. 不要使用 ng-mouseenter 和 ng-mouseleave"></a>5. 不要使用 ng-mouseenter 和 ng-mouseleave</h3><p>使用 angular 内建的 ng-mouseenter, ng-mouseleave 会导致视图闪烁。 如果想实现一些动态效果，建议使用 jQuery 的 animation。 </p>
+<h3 id="6-使用-ng-show-来隐藏不需要的元素"><a href="#6-使用-ng-show-来隐藏不需要的元素" class="headerlink" title="6. 使用 ng-show 来隐藏不需要的元素"></a>6. 使用 ng-show 来隐藏不需要的元素</h3><p>在 ng-repeat 中的 filter 会为每个过滤创建一个元数据的子集。 过滤时，angular 通过调用 $destroy 方法把多余的元素从 $scope 中移除。 当过滤器发生变化的时候又把元素重新关联回 $scope. 每一次动作都会产生性能开销，多数情况下，这样做是没有问题的， 但如果操作频繁，或者数据表非常大的话，就会使性能降低。 这个时候我们可以用计算属性的方法来触发 ng-show 和 ng-hide， 这样可以明显提高性能。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">ng-model</span>=<span class="string">"query"</span>&gt;</span><span class="tag">&lt;/<span class="name">input</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">li</span> <span class="attr">ng-repeat</span>=<span class="string">"item in items"</span> <span class="attr">ng-show</span>=<span class="string">"([item.name] | filter:query).length"</span>&gt;</span>&#123;&#123;item.name&#125;&#125;<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div></pre></td></tr></table></figure>
+<h3 id="7-使用-debounce-过滤数据"><a href="#7-使用-debounce-过滤数据" class="headerlink" title="7. 使用 debounce 过滤数据"></a>7. 使用 debounce 过滤数据</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* Controller */</span></div><div class="line">$scope.$watch(<span class="string">'queryInput'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">newValue, oldValue</span>) </span>&#123;</div><div class="line">    <span class="keyword">if</span> (newValue === oldValue) &#123; <span class="keyword">return</span>; &#125;</div><div class="line">    $debounce(applyQuery, <span class="number">350</span>);</div><div class="line">&#125;);</div><div class="line"><span class="keyword">var</span> applyQuery = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123; </div><div class="line">    $scope.filter.query = $scope.query;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">/* View */</div><div class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">ng-model</span>=<span class="string">"queryInput"</span>/&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">li</span> <span class="attr">ng-repeat</span>= <span class="string">item</span> <span class="attr">in</span> <span class="attr">items</span> | <span class="attr">filter:filter.query</span>&gt;</span>&#123;&#123; item.title &#125;&#125; <span class="tag">&lt;/<span class="name">li</span>&gt;</span></div></pre></td></tr></table></figure>
+<h3 id="8-销毁定时器"><a href="#8-销毁定时器" class="headerlink" title="8. 销毁定时器"></a>8. 销毁定时器</h3><p>定时器无法被自动回收，所以我们需要自己手动回收</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> timer;</div><div class="line"></div><div class="line">timer = $timeout(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="comment">// do something；</span></div><div class="line">&#125;, <span class="number">1000</span>);</div><div class="line"></div><div class="line">$scope.$on(<span class="string">'$destroy'</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">    $timeout.cancel(timer);</div><div class="line">&#125;);</div></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;AngularJS 作为 Google 开源的 JS 前端框架最近一直很火。 在 html 中加上几个标签， 根据格式写几句 javascript 代码， 一个单页应用就总跑起来了。其方便的上手体验， 双向数据绑定等特性给了很多前端开发者很好的亲切感。 而然随着大家逐渐用 
+    
+    </summary>
+    
+      <category term="前端开发" scheme="http://zhex.me/categories/%E5%89%8D%E7%AB%AF%E5%BC%80%E5%8F%91/"/>
+    
+      <category term="AngularJS" scheme="http://zhex.me/categories/%E5%89%8D%E7%AB%AF%E5%BC%80%E5%8F%91/AngularJS/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Angularjs 中的 provider, factory 和 service</title>
+    <link href="http://zhex.me/blog/2013/08/03/provider-factory-and-service-in-angularjs/"/>
+    <id>http://zhex.me/blog/2013/08/03/provider-factory-and-service-in-angularjs/</id>
+    <published>2013-08-03T08:27:00.000Z</published>
+    <updated>2016-12-03T16:13:43.741Z</updated>
+    
+    <content type="html"><![CDATA[<p>相信开发过 angularjs 的兄弟们都会被 provider， factory 和 service 困扰，有没有？本人开始也是一头雾水，看似都是差不多的东西，各有什么用呢？经过去外国社区大量搜索以后终于找到了答案：</p>
+<p>其实 provider， factory， service 都属于 provider， 对的，你没有听错。难道 google 的那帮大牛疯了，没事搞3个一样东西出来？还是让我们先来看看代码分析吧。</p>
+<h2 id="什么是-provider"><a href="#什么是-provider" class="headerlink" title="什么是 provider ?"></a>什么是 provider ?</h2><p>provider 可以为应用提供通用的服务，形式可以是常量，也可以是对象。</p>
+<p>比如我们在 controller 里注入进来的 $http, $scope 都可以认为是 provider。 </p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">app.controller(<span class="string">'MainCtrl'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">$scope, $http</span>) </span>&#123;</div><div class="line">  $http.get(....).then(.....);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>现在让我们自己来定制一个 provider</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 方法 1</span></div><div class="line">$provide.provider(<span class="string">'test'</span>, &#123;</div><div class="line">  <span class="attr">n</span>: <span class="number">3</span>;</div><div class="line">  $get: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123; </div><div class="line">    <span class="keyword">return</span> n;</div><div class="line">  &#125;;</div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="comment">// 方法 2</span></div><div class="line">$provide.provider(<span class="string">'test'</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">  <span class="keyword">this</span>.n = <span class="number">3</span>;</div><div class="line">  <span class="keyword">this</span>.$get = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123; </div><div class="line">    <span class="keyword">return</span> n;</div><div class="line">  &#125;;</div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="comment">// 使用</span></div><div class="line">app.controller(<span class="string">'MainCtrl'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">$scope, test</span>) </span>&#123;</div><div class="line">  $scope.test = test;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>让我们看看 provider 的内部实现代码</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">provider</span>(<span class="params">name, provider_</span>) </span>&#123;</div><div class="line">  <span class="keyword">if</span> (isFunction(provider_)) &#123;</div><div class="line">    provider_ = providerInjector.instantiate(provider_);</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">if</span> (!provider_.$get) &#123;</div><div class="line">    <span class="keyword">throw</span> <span class="built_in">Error</span>(<span class="string">'Provider '</span> + name + <span class="string">' must define $get factory method.'</span>);</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> providerCache[name + providerSuffix] = provider_;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>可以看到 provider 的基本原则就是通过实现 $get 方法来进行单例注入，使用时获得的就是 $get 执行后的结果。</p>
+<h2 id="factory"><a href="#factory" class="headerlink" title="factory"></a>factory</h2><p>那如果每次都要写一个 $get 是不是很麻烦？ OK，所以我们有了 factory。 factory 可以说是 provider 的变种， 方法中的第二个参数就是 $get 中的内容。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 定义 factory </span></div><div class="line">$provide.factory(<span class="string">'dd'</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123; </div><div class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Date</span>();</div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="comment">// 使用</span></div><div class="line">app.controller(<span class="string">'MainCtrl'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">$scope, dd</span>) </span>&#123;</div><div class="line">  $scope.mydate = dd;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>factory 的实现源代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">factory</span>(<span class="params">name, factoryFn</span>) </span>&#123; </div><div class="line">  <span class="keyword">return</span> provider(name, &#123; </div><div class="line">    <span class="attr">$get</span>: factoryFn </div><div class="line">  &#125;); </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="service"><a href="#service" class="headerlink" title="service"></a>service</h2><p>在 factory 的例子中我们还是需要 new 一个对象返回，而 service 就更简单了，这一步都帮你省了， 他的第二个参数就是你要返回的对象类， 也就是 new 的哦给你工作都不用你做了。够清爽吧？</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 定义 service </span></div><div class="line">$provide.service(<span class="string">'dd'</span>, <span class="built_in">Date</span>);</div></pre></td></tr></table></figure>
+<p>下面是 service 的实现源代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">service</span>(<span class="params">name, constructor</span>) </span>&#123;</div><div class="line">  <span class="keyword">return</span> factory(name, [<span class="string">'$injector'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">$injector</span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> $injector.instantiate(<span class="keyword">constructor</span>);</div><div class="line">  &#125;]);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>然后 factory 和 service 带来代码精简的同时也损失了一些特性。 provider 定义的服务是可以通过模块 config 来配置的。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;相信开发过 angularjs 的兄弟们都会被 provider， factory 和 service 困扰，有没有？本人开始也是一头雾水，看似都是差不多的东西，各有什么用呢？经过去外国社区大量搜索以后终于找到了答案：&lt;/p&gt;
+&lt;p&gt;其实 provider， factory
+    
+    </summary>
+    
+      <category term="前端开发" scheme="http://zhex.me/categories/%E5%89%8D%E7%AB%AF%E5%BC%80%E5%8F%91/"/>
+    
+      <category term="AngularJS" scheme="http://zhex.me/categories/%E5%89%8D%E7%AB%AF%E5%BC%80%E5%8F%91/AngularJS/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Back to JS world</title>
+    <link href="http://zhex.me/blog/2013/08/01/back-to-js-world/"/>
+    <id>http://zhex.me/blog/2013/08/01/back-to-js-world/</id>
+    <published>2013-08-01T13:10:00.000Z</published>
+    <updated>2016-12-03T16:13:43.741Z</updated>
+    
+    <content type="html"><![CDATA[<p>NodeJS 出来很久，一直都是关注，却没有真正用心去融入这个世界。 知道 express，知道 sock.io，也知道很多很多的 node 界产品的名字。可是问我精通哪一样，还真说不上来，回头想想还真有点惭愧。 </p>
+<p>最近发现 JS 的世界太繁华了，让我这个心总是不定的人又找到了一个可以玩闹的乐园，有太多的东西可以尝试，可以把玩。而前后端只需要 JS 一种语言，太神奇了。  所以决定重新返回 JS 的世界，安心享受这个环境带来的快乐。</p>
+<p>既然开始就要给自己列一些学习清单：</p>
+<ul>
+<li><a href="http://www.angularjs.org" target="_blank" rel="external">angularjs</a> 这个肯定是首选， 因为项目用到。 非常佩服 google 的这帮架构师， 颠覆了我严重的前端开发模式</li>
+<li><a href="http://www.emberjs.com" target="_blank" rel="external">ember.js</a> 另一个我喜欢的前端框架， 思路清晰，开发者都是大牛。 多次想把它用进项目未遂， 还是会对他保持高关注度。</li>
+<li><a href="http://www.gruntjs.com" target="_blank" rel="external">Grunt.js</a> 工欲善其事，必先利其器。 曾今的前端开发就像是野八路，总是工作在一堆混乱的环境中。现在有了 grunt 这样的神器， 我们也可以和 java， .net 等大社区的家伙么谈论自动化了。</li>
+<li><a href="http://www.yeoman.io" target="_blank" rel="external">Yeoman</a> 前端也可以有流程，而 yeoman 未前端的开发者们创建了架构开发流程的通道， 这样好东西怎么能不好好学习下。</li>
+<li><a href="http://socket.io" target="_blank" rel="external">socket.io</a> 可以说是为 nodejs 而生的产品，带领我们走进 real time 时代。以往一直都是瞎用， 现在得好好了解下了。</li>
+<li>audio context 也是我一直想研究的，试想下在web页面上玩 dj，多酷啊。</li>
+</ul>
+<p>其实想学习的东西还有好多， 这个世界发展的太快了。 曾有人说 java， ruby 等都是在现代社会， node 刚开始工业革命， 而 go 还在蛮荒时代。 相信 Node 在未来几年绝对可以赶上。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;NodeJS 出来很久，一直都是关注，却没有真正用心去融入这个世界。 知道 express，知道 sock.io，也知道很多很多的 node 界产品的名字。可是问我精通哪一样，还真说不上来，回头想想还真有点惭愧。 &lt;/p&gt;
+&lt;p&gt;最近发现 JS 的世界太繁华了，让我这个心总
+    
+    </summary>
+    
+      <category term="前端开发" scheme="http://zhex.me/categories/%E5%89%8D%E7%AB%AF%E5%BC%80%E5%8F%91/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>CocoaPods</title>
+    <link href="http://zhex.me/blog/2013/04/14/cocoapods/"/>
+    <id>http://zhex.me/blog/2013/04/14/cocoapods/</id>
+    <published>2013-04-13T23:08:00.000Z</published>
+    <updated>2016-12-03T16:13:43.741Z</updated>
+    
+    <content type="html"><![CDATA[<p>在 ruby 中用惯了 gem， python 中有 easy_install 和 pip。 总希望开发 ios 应用的时候也可以有这样方便的包管理工具可以简化自己的开发流程。非常幸运，最近知道了 <a href="https://github.com/CocoaPods/CocoaPods" target="_blank" rel="external">CocoaPods</a>, 一个为 mac 和 ios 开发者提供的包第三方包管理工具。</p>
+<p>安装 cocoapods 需要 ruby gem 的支持。 这个应该不是问题， mac 系统自带 ruby。</p>
+<p>直接命令行运行：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">gem install cocoapods</div></pre></td></tr></table></figure>
+<p>我们可以用 <strong>pod list</strong> 命令列出可以被安装的插件列表， 非常长。 所以更多时候我们可以用 <strong>pod search ‘keyword’</strong> 命令来找出我们需要的插件。</p>
+<p>和 ruby gem 一样，我们需要在项目目录下建立一个 Podfile （对应 ruby 中的 Gemfile）。 格式如下：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">platform <span class="symbol">:ios</span></div><div class="line">pod <span class="string">'JSONKit'</span>,       <span class="string">'~&gt; 1.4'</span></div><div class="line">pod <span class="string">'Reachability'</span>,  <span class="string">'~&gt; 3.0.0'</span></div><div class="line">pod <span class="string">'ASIHTTPRequest'</span></div><div class="line">pod <span class="string">'RegexKitLite'</span></div></pre></td></tr></table></figure>
+<p>是不是和 Gemfile 很类似？ 完成后在命令行运行 ：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pod install</div></pre></td></tr></table></figure>
+<p>最后我们需要用 pod 生成的 .xcworkspace 文件来代替 xcode 默认的 .xcodeproj 来启动项目就可以了。</p>
+<p>##原理</p>
+<ol>
+<li>Pods 项目最终会编译成一个名为 libPods.a 的文件，主项目只需要依赖这个.a文件即可。</li>
+<li>对于资源文件，CocoaPods 提供了一个名为 Pods-resources.sh 的 bash 脚本，该脚本在每次项目编译的时候都会执行，将第三方库的各种资源文件复制到目标目录中。</li>
+<li>CocoaPods 通过一个名为 Pods.xcconfig 的文件来在编译时设置所有的依赖和参数。</li>
+</ol>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;在 ruby 中用惯了 gem， python 中有 easy_install 和 pip。 总希望开发 ios 应用的时候也可以有这样方便的包管理工具可以简化自己的开发流程。非常幸运，最近知道了 &lt;a href=&quot;https://github.com/CocoaPods/
+    
+    </summary>
+    
+      <category term="Objective-c" scheme="http://zhex.me/categories/Objective-c/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>HTML5 Fullscreen API</title>
+    <link href="http://zhex.me/blog/2013/02/27/html5-fullscreen-api/"/>
+    <id>http://zhex.me/blog/2013/02/27/html5-fullscreen-api/</id>
+    <published>2013-02-27T14:19:00.000Z</published>
+    <updated>2016-12-03T16:13:43.741Z</updated>
+    
+    <content type="html"><![CDATA[<p>多年来，浏览器厂商都没有像 Flash 那样在网页端提供全屏模式调用， 原因只有一个: 安全。如果应用程序可以强制用户运行在全屏模式， 那用户将会失去对浏览器的控制，再也看不见浏览器菜单，看不到工具条， 甚至无法关闭窗口。 有些别有用心的程序员还可以通过种种手段对用户端的信息安全造成威胁。</p>
+<p>随着HTML5标准的到来，很多浏览器开发商们终于把 Fullscreen API 带了进来。 区别于浏览器默认的 F11 按钮，Fullscreen API 并不是让整个浏览器处于全屏模式， 而是让页面中的某个元素处于全屏模式，可以是图片，视频，或者跑游戏的 Canvas 元素。而当元素被放到倒全屏模式的时候， 用户屏幕会收到在任何时候按 ESC 可以返回的提示。</p>
+<p>Fullscreen 的调用非常简单:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 进去全屏模式</span></div><div class="line"><span class="built_in">document</span>.getElementById(<span class="string">"myvideo"</span>).requestFullScreen();</div><div class="line"></div><div class="line"><span class="comment">// 退出全屏模式</span></div><div class="line"><span class="built_in">document</span>.cancelFullScreen();</div><div class="line"></div><div class="line"><span class="comment">// 当进入全屏模式的时候，document.fullScreen 将会返回 true</span></div><div class="line"><span class="built_in">console</span>.log(<span class="built_in">document</span>.fullScreen)</div></pre></td></tr></table></figure>
+<p>同时， 我们可以通过 :full-screen 尾类来对进入全屏模式的元素重新绘制样式。</p>
+<p>对于不同的浏览器，苦逼的程序员还是不能忘记用各种前缀标签: -webkit, -moz, -ms ….., 所以我们可以写一个程序来自动执行这些方法。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> pfx = [<span class="string">"webkit"</span>, <span class="string">"moz"</span>, <span class="string">"ms"</span>, <span class="string">"o"</span>, <span class="string">""</span>];</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">runPrefixMethod</span>(<span class="params">obj, method</span>) </span>&#123;</div><div class="line">	<span class="keyword">var</span> p = <span class="number">0</span>, m, t;</div><div class="line">	<span class="keyword">while</span> (p &lt; pfx.length &amp;&amp; !obj[m]) &#123;</div><div class="line">		m = method;</div><div class="line">		<span class="keyword">if</span> (pfx[p] == <span class="string">""</span>) &#123;</div><div class="line">			m = m.substr(<span class="number">0</span>,<span class="number">1</span>).toLowerCase() + m.substr(<span class="number">1</span>);</div><div class="line">		&#125;</div><div class="line">		m = pfx[p] + m;</div><div class="line">		t = <span class="keyword">typeof</span> obj[m];</div><div class="line">		<span class="keyword">if</span> (t != <span class="string">"undefined"</span>) &#123;</div><div class="line">			pfx = [pfx[p]];</div><div class="line">			<span class="keyword">return</span> (t == <span class="string">"function"</span> ? obj[m]() : obj[m]);</div><div class="line">		&#125;</div><div class="line">		p++;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>使用时的代码为：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> e = <span class="built_in">document</span>.getElementById(<span class="string">"fullscreen"</span>);</div><div class="line"></div><div class="line">e.onclick = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">	<span class="keyword">if</span> (runPrefixMethod(<span class="built_in">document</span>, <span class="string">"FullScreen"</span>) || runPrefixMethod(<span class="built_in">document</span>, <span class="string">"IsFullScreen"</span>)) &#123;</div><div class="line">		runPrefixMethod(<span class="built_in">document</span>, <span class="string">"CancelFullScreen"</span>);</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">else</span> &#123;</div><div class="line">		runPrefixMethod(e, <span class="string">"RequestFullScreen"</span>);</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>至于 CSS 的前缀后缀就只能依靠编辑器插件来帮助偷懒了。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;多年来，浏览器厂商都没有像 Flash 那样在网页端提供全屏模式调用， 原因只有一个: 安全。如果应用程序可以强制用户运行在全屏模式， 那用户将会失去对浏览器的控制，再也看不见浏览器菜单，看不到工具条， 甚至无法关闭窗口。 有些别有用心的程序员还可以通过种种手段对用户端的信
+    
+    </summary>
+    
+      <category term="前端开发" scheme="http://zhex.me/categories/%E5%89%8D%E7%AB%AF%E5%BC%80%E5%8F%91/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>我的宝宝降生了</title>
+    <link href="http://zhex.me/blog/2013/02/15/my-baby-coming/"/>
+    <id>http://zhex.me/blog/2013/02/15/my-baby-coming/</id>
+    <published>2013-02-15T15:00:00.000Z</published>
+    <updated>2016-12-03T16:13:43.741Z</updated>
+    
+    <content type="html"><![CDATA[<p>二月八日的清晨，我的宝宝降生了。 男孩， 7.6斤， 重量远远超出了我们家人的想象，因为产检的时候测出来就6斤不到。全家都开始为宝宝的到来忙上忙下，就连我的年夜饭也是在医院吃着全家的面包和关东煮。真应了那句广告词：全家都是我家。</p>
+<h2 id="取名"><a href="#取名" class="headerlink" title="取名"></a>取名</h2><p>都说一个好名字会影响人的一生，虽然我不是迷信的人，但也希望给宝宝带来一点运气，给家人带来一点安慰。然后查遍各大算命网站，参考各种资料，发现我宝宝木多缺金，补金就成了我们的取名的首要目标。也不知道我老爸哪里翻出来的“崟（yin）”这个字，整整一座金山阿，这个应该够了吧。然后尝试各种组合，为了读起来好听，不容易被斜音，我们放弃了一个99分的名字，选了一个90分的名字。</p>
+<h2 id="小龙？大蛇？傻傻分不清楚"><a href="#小龙？大蛇？傻傻分不清楚" class="headerlink" title="小龙？大蛇？傻傻分不清楚"></a>小龙？大蛇？傻傻分不清楚</h2><p>由于出生在春节前，大家都认为宝宝应该属龙。但是经过查阅资料发现，最早的生肖应该按照立春来划分，那就变成蛇了。好吧，在家人的一致坚持下，我们的宝宝顺利晋升为小尾龙，谁叫中国人都相信我们是龙的传人呢，到了龙年就会有大批龙宝宝降生，我们已经可以想象到以后他们的就业，结婚等问题了。</p>
+<h2 id="宝宝是个大食猫"><a href="#宝宝是个大食猫" class="headerlink" title="宝宝是个大食猫"></a>宝宝是个大食猫</h2><p>能吃，绝对对得起他的重量。每3个小时就吃80ml左右的奶，雷打不动，比闹钟还准，分量还在不断上涨中。都说能吃是富，宝宝能吃就好养，想象也是，我们全家都是这么安慰自己。几天下来我感觉宝宝就像客户， 他们有需求，当你满足他们的需求以后，他们就会满足的睡去，睡梦中带着一丝微笑。哭声是他们在表达他们的需求，关键是你听懂了吗。</p>
+<img src="/images/blog/babyphotos/newborn-1.JPG" width="500" height="500">
+<img src="/images/blog/babyphotos/newborn-2.jpg" width="500" height="500">
+<img src="/images/blog/babyphotos/newborn-3.jpg" width="500" height="500">]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;二月八日的清晨，我的宝宝降生了。 男孩， 7.6斤， 重量远远超出了我们家人的想象，因为产检的时候测出来就6斤不到。全家都开始为宝宝的到来忙上忙下，就连我的年夜饭也是在医院吃着全家的面包和关东煮。真应了那句广告词：全家都是我家。&lt;/p&gt;
+&lt;h2 id=&quot;取名&quot;&gt;&lt;a hre
+    
+    </summary>
+    
+      <category term="生活" scheme="http://zhex.me/categories/%E7%94%9F%E6%B4%BB/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>移动 Web 设计： !important</title>
+    <link href="http://zhex.me/blog/2013/02/07/mobile-web-design-important-property/"/>
+    <id>http://zhex.me/blog/2013/02/07/mobile-web-design-important-property/</id>
+    <published>2013-02-07T03:22:00.000Z</published>
+    <updated>2016-12-03T16:13:43.741Z</updated>
+    
+    <content type="html"><![CDATA[<p>相信被各个浏览器折腾的够呛的前端开发者们都应该很了解 CSS 中 !important 这个属性了。 当年在 ie6 － 8 的时候为了解决各浏览器兼容性问题的时候，!important 属性就成为了一项利器。 他通过调高代码优先级，利用一些浏览器的识别度来帮助开发者达到样式兼容效果。 然而随着时间的推移，现代浏览器的兼容性越来越好， 很多创新公司的项目也只针对现代浏览器开发，需要对兼容性的控制也慢慢少了。</p>
+<p>当今在移动互联网时代， 不少开发者们又都被老总派上阵去执行迁移原有产品页面到移动端的工作。 看着原有网页上一行行由 javascript 生成的 inline css 是不是想骂娘？ 直接修改js代码怕对原来的重量级网站带来不可预测的影响； 不修改吧页面效果又难以实现。 好吧，!important 属性又将再一次拯救你， 因为他的优先级是高于 inline css 的。看一段下面的代码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;!doctype html&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="undefined"></span></div><div class="line">      </div><div class="line">      @media only screen and (max-device-width: 640px) &#123;</div><div class="line">        .block &#123;</div><div class="line">          color: green !important;</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">    <span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"block"</span> <span class="attr">style</span>=<span class="string">"color: red"</span>&gt;</span></div><div class="line">      hello world!</div><div class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>通过上面代码的演示，我们可以看到在手机上 .block 里的文字被设置成了绿色， 成功的覆盖了 inline css 设置的红色。</p>
+<p>好了，找回我们的老朋友，继续面对移动互联网的挑战吧。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;相信被各个浏览器折腾的够呛的前端开发者们都应该很了解 CSS 中 !important 这个属性了。 当年在 ie6 － 8 的时候为了解决各浏览器兼容性问题的时候，!important 属性就成为了一项利器。 他通过调高代码优先级，利用一些浏览器的识别度来帮助开发者达到样
+    
+    </summary>
+    
+      <category term="前端开发" scheme="http://zhex.me/categories/%E5%89%8D%E7%AB%AF%E5%BC%80%E5%8F%91/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Android 中使用 CSS orientation 属性时的陷阱</title>
+    <link href="http://zhex.me/blog/2013/02/07/trap-of-css-orientation-in-android/"/>
+    <id>http://zhex.me/blog/2013/02/07/trap-of-css-orientation-in-android/</id>
+    <published>2013-02-07T02:53:00.000Z</published>
+    <updated>2016-12-03T16:13:43.741Z</updated>
+    
+    <content type="html"><![CDATA[<p>随着移动互联网时代的到来，大量的网站开始倾向于使用<a href="http://en.wikipedia.org/wiki/Responsive_web_design" target="_blank" rel="external">响应式页面设计</a>，以便于支持多种设备的访问。这一变化又给前端开发者们带来不少的问题， 大家又要开始一个个的填坑了。</p>
+<p>相信 media query 会是大家开发响应式页面都会用到的方法。 可惜 android 对于 media query 的 orientation 属性支持的并不好。我们可以先来看看下面一段代码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;!doctype html&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="undefined"></span></div><div class="line">      @media only screen and (orientation: portrait) &#123;</div><div class="line">        body &#123; background: red; &#125;</div><div class="line">      &#125;</div><div class="line"></div><div class="line">      @media only screen and (orientation: landscape) &#123;</div><div class="line">        body &#123; background: green; &#125;</div><div class="line">      &#125;</div><div class="line">    <span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"text"</span> /&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>这段代码中定义了手机竖屏时背景色为红色， 横屏时为绿色。在 android 中测试看似一切正常。但当我们 focus 到 input 框的时候问题出现了。当我们在竖屏时背景色居然也是绿色。</p>
+<p>我的猜测是 android 是通过屏幕的长宽比来判断是否是竖屏还是横评。 当我们 focus 到 input 框的时候，手机系统会自动弹出虚拟键盘， 此时屏幕的长宽发生变化，导致 android 会判断当前情况为横屏。同样的代码在 iphone 下测试完全通过。</p>
+<p>所以大家在 orientation 属性的时候要格外小心， 避免这类情况对页面带来的破坏。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;随着移动互联网时代的到来，大量的网站开始倾向于使用&lt;a href=&quot;http://en.wikipedia.org/wiki/Responsive_web_design&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;响应式页面设计&lt;/a&gt;，以便于支持多种设
+    
+    </summary>
+    
+      <category term="前端开发" scheme="http://zhex.me/categories/%E5%89%8D%E7%AB%AF%E5%BC%80%E5%8F%91/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>RPC 协议和他的 ruby 实现</title>
+    <link href="http://zhex.me/blog/2013/01/24/rpc-and-ruby/"/>
+    <id>http://zhex.me/blog/2013/01/24/rpc-and-ruby/</id>
+    <published>2013-01-24T13:37:00.000Z</published>
+    <updated>2016-12-03T16:13:43.741Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="什么是-RPC"><a href="#什么是-RPC" class="headerlink" title="什么是 RPC"></a>什么是 RPC</h2><p>RPC 是 Remote Procedure Call的缩写，翻译成中文就是远程过程调用。</p>
+<p>在百度百科中，我们可以简单的得到精确的定义：</p>
+<blockquote><p>RPC协议假定某些传输协议的存在，如TCP或UDP，为通信程序之间携带信息数据。在OSI网络通信模型中，RPC跨越了传输层和应用层。RPC使得开发包括网络分布式多程序在内的应用程序更加容易。</p>
+<p>RPC采用客户机/服务器模式。请求程序就是一个客户机，而服务提供程序就是一个服务器。首先，调用进程发送一个有进程参数的调用信息到服务进程，然后等待应答信息。在服务器端，进程保持睡眠状态直到调用信息的到达为止。当一个调用信息到达，服务器获得进程参数，计算结果，发送答复信息，然后等待下一个调用信息，最后，客户端调用过程接收答复信息，获得进程结果，然后调用执行继续进行。</p>
+</blockquote>
+<h2 id="Ruby-and-XML-RPC"><a href="#Ruby-and-XML-RPC" class="headerlink" title="Ruby and XML-RPC"></a>Ruby and XML-RPC</h2><p>XML-RPC 是一种基于 XML 传输的 RPC 实现方式。 而 ruby 里已经为我们内建了 XML-RPC 的类库，我们可以很方便的拿来编写程序。下面我们来看一个简单的例子。</p>
+<figure class="highlight ruby"><figcaption><span>server.rb</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">require</span> <span class="string">'xmlrpc/server'</span></div><div class="line"></div><div class="line">server = XMLRPC::Server.new <span class="number">8080</span></div><div class="line"></div><div class="line">server.add_handler <span class="string">'user.yield'</span> <span class="keyword">do</span> <span class="params">|name|</span></div><div class="line">  <span class="string">"Hi, <span class="subst">#&#123;name&#125;</span>! Welcome to the RPC world."</span></div><div class="line"><span class="keyword">end</span></div><div class="line"></div><div class="line">server.serve</div></pre></td></tr></table></figure>
+<figure class="highlight ruby"><figcaption><span>client.rb</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">require</span> <span class="string">'xmlrpc/client'</span></div><div class="line"></div><div class="line">client = XMLRPC::Client.new <span class="string">'localhost'</span>, <span class="string">'/'</span>, <span class="number">8080</span></div><div class="line"></div><div class="line">puts client.call <span class="string">'user.yield'</span>, <span class="string">'zhex'</span></div></pre></td></tr></table></figure>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;什么是-RPC&quot;&gt;&lt;a href=&quot;#什么是-RPC&quot; class=&quot;headerlink&quot; title=&quot;什么是 RPC&quot;&gt;&lt;/a&gt;什么是 RPC&lt;/h2&gt;&lt;p&gt;RPC 是 Remote Procedure Call的缩写，翻译成中文就是远程过程调用。&lt;/p&gt;
+
+    
+    </summary>
+    
+      <category term="Ruby" scheme="http://zhex.me/categories/Ruby/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>流量改变移动互联网</title>
+    <link href="http://zhex.me/blog/2013/01/10/net-flow-change-mobil-internet/"/>
+    <id>http://zhex.me/blog/2013/01/10/net-flow-change-mobil-internet/</id>
+    <published>2013-01-10T09:03:00.000Z</published>
+    <updated>2016-12-03T16:13:43.741Z</updated>
+    
+    <content type="html"><![CDATA[<img src="/images/blog/flow.jpg" width="500" height="400">
+<p>最近入手iphone 5 以后也使用上了电信得3G套餐，一个月1.35G的流量，6元钱。 一段时间得使用后，觉得自己平时对移动设备的使用习惯彻底改变了。</p>
+<p>以前我总是在出门前同步好 RSS reader 里的文章，总是小心的打开地图类应用，因为很耗流量。 看微薄的时候也经常克制自己少刷几页，毕竟 GPRS 好贵。Flipboard 之类的应用常驻手机，但出门几乎从不打开。</p>
+<p>而现在，flipboard 这种应用反而成为了我的常用工具， 坐地铁的闲暇时间我也会去刷刷微博里的图片，打开知乎app看看最近热门的问题。 充足的3G流量给我带来了即时信息的快感。随着移动流量价格的下降，网速加快，更多类型的应用会得到普及。好比视频聊天，唱吧等。或者我可以直接用手机打开视频网站看看连续剧，只要我有足够的流量。</p>
+<p>记得2年前，我设计手机应用的时候还在为多少人会长时间打开GPRS功能而担心 而现在移动上网费已经不是一个大问题了。所以时常要提醒自己： 眼光要放远一点！</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;img src=&quot;/images/blog/flow.jpg&quot; width=&quot;500&quot; height=&quot;400&quot;&gt;
+&lt;p&gt;最近入手iphone 5 以后也使用上了电信得3G套餐，一个月1.35G的流量，6元钱。 一段时间得使用后，觉得自己平时对移动设备的使用习惯彻底改变了。&lt;/
+    
+    </summary>
+    
+      <category term="互联网" scheme="http://zhex.me/categories/%E4%BA%92%E8%81%94%E7%BD%91/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>HTTP Verb: POST, PUT和PATCH的区别</title>
+    <link href="http://zhex.me/blog/2013/01/07/http-verb-different-between-post-put-and-patch/"/>
+    <id>http://zhex.me/blog/2013/01/07/http-verb-different-between-post-put-and-patch/</id>
+    <published>2013-01-07T14:16:00.000Z</published>
+    <updated>2016-12-03T16:13:43.741Z</updated>
+    
+    <content type="html"><![CDATA[<p>一直一来对HTTP Verb的认识是 GET, POST, PUT, DELETE。 随着Rails 4的到，又让我认识了 PATCH。接踵而来的问题当然是 POST, PUT 和 PATCH 的区别了。</p>
+<p>先来看看官方定义：</p>
+<ul>
+<li><strong>POST</strong> to create a new resource when the client cannot predict the identity on the origin server (think a new order)</li>
+<li><strong>PUT</strong> to override the definition of a specified resource with what is passed in from the client</li>
+<li><strong>PATCH</strong> to override a portion of a specified resource in a predictable and effectively transactional way (if the entire patch cannot be performed, the server should not do any part of it)</li>
+</ul>
+<p>显而易见， post表示新增，  put可以认为是完整替换， 而patch的作用是部分替换。</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># POST /items</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">create</span></span></div><div class="line">  @item = Item.new</div><div class="line">  @item.attributes = &#123; <span class="symbol">:name</span> =&gt; params[<span class="symbol">:name</span>],</div><div class="line">                      <span class="symbol">:image</span> =&gt; params[<span class="symbol">:image</span>] &#125;</div><div class="line">  @item.save</div><div class="line"><span class="keyword">end</span></div></pre></td></tr></table></figure>
+<p>这里我们利用 POST 创建了一个服务器端从来就没有的 item。</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># PUT /items/&#123;id&#125;</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">replace</span></span></div><div class="line">  @item = Item.find_by_id(params[<span class="symbol">:id</span>])</div><div class="line"></div><div class="line">  <span class="keyword">unless</span> @item  <span class="comment"># if <span class="doctag">@item</span>.nil?</span></div><div class="line">      @item = Item.new</div><div class="line">      @item.id = params[<span class="symbol">:id</span>]</div><div class="line">  <span class="keyword">end</span></div><div class="line"></div><div class="line">  @item.attributes = &#123; <span class="symbol">:name</span> =&gt; params[<span class="symbol">:name</span>],</div><div class="line">                       <span class="symbol">:image</span> =&gt; params[<span class="symbol">:image</span>] &#125;</div><div class="line">  @item.save</div><div class="line"><span class="keyword">end</span></div></pre></td></tr></table></figure>
+<p>如果在上面的代码中，我们没有传递 :image, 那更新后 :image 将会是 nil</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># PATCH /items/&#123;id&#125;</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">patch</span></span></div><div class="line">  @item = Item.find(params[<span class="symbol">:id</span>])</div><div class="line">  @item.attributes = params.slice(<span class="symbol">:name</span>, <span class="symbol">:image</span>)</div><div class="line">  @item.save</div><div class="line"><span class="keyword">end</span></div></pre></td></tr></table></figure>
+<p>上面的代码中，我们只更新:name, :image, 其他部分内容不会被更新，也不会被滞空。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;一直一来对HTTP Verb的认识是 GET, POST, PUT, DELETE。 随着Rails 4的到，又让我认识了 PATCH。接踵而来的问题当然是 POST, PUT 和 PATCH 的区别了。&lt;/p&gt;
+&lt;p&gt;先来看看官方定义：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;str
+    
+    </summary>
+    
+      <category term="Ruby" scheme="http://zhex.me/categories/Ruby/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Rails 4 - Strong parameters</title>
+    <link href="http://zhex.me/blog/2013/01/06/rails-4-strong-parameters/"/>
+    <id>http://zhex.me/blog/2013/01/06/rails-4-strong-parameters/</id>
+    <published>2013-01-06T04:55:00.000Z</published>
+    <updated>2016-12-03T16:13:43.741Z</updated>
+    
+    <content type="html"><![CDATA[<p>Rails 4 里引入了Strong parameters机制， 让我们看看有什么区别：</p>
+<figure class="highlight ruby"><figcaption><span>Rails 3.2 - mass assignment</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># app/models/uesr.rb</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span> &lt; ActiveRecord::Base</span></div><div class="line">  attr_accessible <span class="symbol">:username</span>, <span class="symbol">:password</span></div><div class="line"><span class="keyword">end</span></div><div class="line"></div><div class="line"><span class="comment"># app/controllers/users_controller.rb</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">UsersController</span> &lt; ApplicationController</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">create</span></span></div><div class="line">    @user = User.create! params[<span class="symbol">:user</span>]</div><div class="line">    redirect_to @user</div><div class="line">  <span class="keyword">end</span></div><div class="line"><span class="keyword">end</span></div></pre></td></tr></table></figure>
+<figure class="highlight ruby"><figcaption><span>Rails 4 - using strong parameters</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># app/models/uesr.rb</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span> &lt; ActiveRecord::Base;</span> <span class="keyword">end</span></div><div class="line"></div><div class="line"><span class="comment"># app/controllers/users_controller.rb</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">UsersController</span> &lt; ApplicationController</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">create</span></span></div><div class="line">    @user = User.create! user_params</div><div class="line">    redirect_to @user</div><div class="line">  <span class="keyword">end</span></div><div class="line"></div><div class="line">  private</div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">user_params</span></span></div><div class="line">    params.<span class="keyword">require</span>(<span class="symbol">:user</span>).permit(<span class="symbol">:username</span>, <span class="symbol">:password</span>)</div><div class="line">  <span class="keyword">end</span></div><div class="line"><span class="keyword">end</span></div></pre></td></tr></table></figure>
+<p>以上两段代码都是为了防止用户恶意修改一些敏感字段。不同的是在 Rails 3.2 的时候，我们使用了 Mass assignment 方法， 我们在 model 中限制字段。 而 Rails 4 我们使用了 strong parameters后，对字段限制的控制权交给了 controller。比较可以看到 strong parameters 的使用会更加灵活，这样将更容易适应复杂的业务需求变化。</p>
+<p>现在 controller 中的 params 是一个 <a href="http://edgeapi.rubyonrails.org/classes/ActionController/Parameters.html" target="_blank" rel="external">ActionController::Parameters</a> 对象。 ActiveModel 有一个 permitted 属性， 默认为 false。我们可以通过 permit！ 或者 permits 方法把该属性设置为 true。</p>
+<p>ActionController::Parameters 有2个关键方法：</p>
+<ul>
+<li><a href="http://edgeapi.rubyonrails.org/classes/ActionController/Parameters.html#method-i-require" target="_blank" rel="external">require(key)</a>: 从 hash 中提取相应的 key，如果没有触发 ActionController::ParameterMissing 错误。</li>
+<li><a href="http://edgeapi.rubyonrails.org/classes/ActionController/Parameters.html#method-i-permit" target="_blank" rel="external">permit(keys)</a>: 设置被允许的属性，并把 permitted 属性设置为 true。</li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Rails 4 里引入了Strong parameters机制， 让我们看看有什么区别：&lt;/p&gt;
+&lt;figure class=&quot;highlight ruby&quot;&gt;&lt;figcaption&gt;&lt;span&gt;Rails 3.2 - mass assignment&lt;/span&gt;&lt;/fig
+    
+    </summary>
+    
+      <category term="Ruby" scheme="http://zhex.me/categories/Ruby/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>基础设施虚拟化成熟度的四个阶段</title>
+    <link href="http://zhex.me/blog/2013/01/05/four-levels-of-virtualize/"/>
+    <id>http://zhex.me/blog/2013/01/05/four-levels-of-virtualize/</id>
+    <published>2013-01-05T07:33:00.000Z</published>
+    <updated>2016-12-03T16:13:43.741Z</updated>
+    
+    <content type="html"><![CDATA[<p>##阶段1: 适应</p>
+<ul>
+<li>接受虚拟化(作为一种概念和工具) • 针对测试和开发进行部署</li>
+<li>针对非关键业务灾难恢复进行部署 • 部分生产部署 — 战术层面的</li>
+<li>不要改变运营流程</li>
+<li>有限的虚拟化工具部</li>
+</ul>
+<p>##阶段2: 战略性整合</p>
+<ul>
+<li>熟悉概念、使用、成熟度、稳定性</li>
+<li>将人们对服务器的认识转移到虚拟服务器</li>
+<li>大范围推广生产部署</li>
+<li>开始针对部分关键业务灾难恢复进行部署</li>
+<li>艰难地从服务器增长迁移到虚拟服务器生命周期管理，尝试实时迁移和基于策略的自动化</li>
+</ul>
+<p>##阶段3: 流程改进</p>
+<ul>
+<li>使用实时迁移,开始信任基于策略的自动化，是否能提升利用率?</li>
+<li>针对关键业务灾难恢复进行部署</li>
+<li>开始区分高优先级应用和低优先级应用</li>
+<li>提高运营效率</li>
+<li>在网络、存储、安全性和开发方面实现广泛的流程改进</li>
+</ul>
+<p>##阶段4: 集中和自动化</p>
+<ul>
+<li>基于可信策略的自动化</li>
+<li>实施面向自动化的生产策略</li>
+<li>部分关键任务灾难恢复部署</li>
+<li>集中以及内部云开发</li>
+<li>计费/实用程序追踪<br>• 关注服务级别协议(SLA)和服务质量(QoS)</li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;##阶段1: 适应&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;接受虚拟化(作为一种概念和工具) • 针对测试和开发进行部署&lt;/li&gt;
+&lt;li&gt;针对非关键业务灾难恢复进行部署 • 部分生产部署 — 战术层面的&lt;/li&gt;
+&lt;li&gt;不要改变运营流程&lt;/li&gt;
+&lt;li&gt;有限的虚拟化工具部&lt;/li&gt;
+    
+    </summary>
+    
+      <category term="虚拟化&amp;云计算" scheme="http://zhex.me/categories/%E8%99%9A%E6%8B%9F%E5%8C%96-%E4%BA%91%E8%AE%A1%E7%AE%97/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>为什么需要虚拟化？</title>
+    <link href="http://zhex.me/blog/2012/12/28/why-vm/"/>
+    <id>http://zhex.me/blog/2012/12/28/why-vm/</id>
+    <published>2012-12-28T09:32:00.000Z</published>
+    <updated>2016-12-03T16:13:43.741Z</updated>
+    
+    <content type="html"><![CDATA[<p>说道虚拟机，05，06年的时候就知道有vmware这个玩意。当时无知的我一直把他当成玩具，只知道我们可以在一个windows里装上另外一个跑地巨满的windows，色彩还很难看。具体也不知道这个玩意能干啥，最多跟别人炫耀一下俺们电脑有个画中画功能。</p>
+<p>时日至今，虚拟化却是我们企业中谈论地最多地话题。那为什么我们地企业需要虚拟化呢？</p>
+<p>总结来说就是<strong>节约成本，资源最大化，提高灵活性，响应能力和弹性</strong>，具体表现为：</p>
+<p>##1. 提高现有资源地利用率</p>
+<p>随着时代地进步，我们的硬件设备也在飞速地发展， cpu从单核进入多核时代，硬盘用T计算了， 内存也已经都是白菜价了。 而大多时间我们电脑的cpu使用率都是低于5%的，虚拟机为企业很好的解决了这个问题。一台实体服务器装上多个虚拟服务器，硬件资源很好的被利用起来了，电费省了， 放置服务器的空间腾出来了，老板也happy了。</p>
+<p>##2. 通过缩减物理基础架构和提高服务器/管理员比率，降低数据中心成本</p>
+<p>当采用更出色的管理工具的时候，我们的服务器管理人员可以更轻松的管理我们的服务器。管理员不用在多个物理主机之间跑来跑去了， 不用纠结于各个硬件的安装，插拔。装个网卡，配置个交换机都只要懂几下鼠标。 这样一来一个人把原来几个人的活给干了，管理员得到了心理成就上的满足，老板把人力成本省了，又happy了。</p>
+<p>##3. 提高硬件和 应用程序的可用性，进而提高 业务连续性</p>
+<p>有了虚拟环境，我们的系统成为了一个个镜像文件， 当我们需要迁移备份的时候就变的异常的简单。通过一系列的虚拟管理工具，我们可以安全地备份和迁移整个虚拟环境而不会出现服务中断。消除计划内停机，并可从计划外故障中立即恢复。</p>
+<p>##4. 实现了运营灵活性</p>
+<p>由于采用动态资源管理、加快了服务器部署并改进了桌面和应用程序部署，因此可响应市场的变化。大部分企业都会抱怨,在推出新产品或服务、开展新的销售活动或季节性销售活动而引发的流量高峰时,IT机构不能快速供应新服务或部署新的服务,也不能有效地响应需求变化。常见的原因在于，IT机构在不知道是否能够保护和恢复应用的情况下,无法轻易地进行部署或扩展。借助虚拟化技术，IT机构能够在几分钟内部署新的虚拟机,并通过快速启动或实时迁移立即为其提供保护。要实现扩展,可通过添加新的实例，或者以非中断的方式将工作负载移动至利用率较低的主机，以处理高峰需求。出色的响应能力和灵活性可使企业将IT视作业务推动者，而不是成本中心。</p>
+<p>##5. 提高桌面的可管理性和安全性</p>
+<p>虚拟机不一定需要不熟在实体服务器上， 它几乎可在所有标准桌面计算机、笔记本电脑或 Tablet PC 上部署、管理和监视安全桌面环境，无论是否能连接到网络，用户都可以在本地或以远程方式对这种环境进行访问。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;说道虚拟机，05，06年的时候就知道有vmware这个玩意。当时无知的我一直把他当成玩具，只知道我们可以在一个windows里装上另外一个跑地巨满的windows，色彩还很难看。具体也不知道这个玩意能干啥，最多跟别人炫耀一下俺们电脑有个画中画功能。&lt;/p&gt;
+&lt;p&gt;时日至今，
+    
+    </summary>
+    
+      <category term="虚拟化&amp;云计算" scheme="http://zhex.me/categories/%E8%99%9A%E6%8B%9F%E5%8C%96-%E4%BA%91%E8%AE%A1%E7%AE%97/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>2012年度总结</title>
+    <link href="http://zhex.me/blog/2012/12/27/conclusion-for-2012/"/>
+    <id>http://zhex.me/blog/2012/12/27/conclusion-for-2012/</id>
+    <published>2012-12-27T04:07:00.000Z</published>
+    <updated>2016-12-03T16:13:43.741Z</updated>
+    
+    <content type="html"><![CDATA[<p>2012年又要过去了，地球没有毁灭，生活还在继续。遵照惯例，又到了总结的时候了。</p>
+<p>这一年，完成了人生中的两件大事：女朋友成功变身老婆，我的小宝宝也将会在明年初出世（不出意外应该是大蛇）。不多久我们又加入了房奴的队列，作为一个中国人，尤其在上海，买房真是一件头痛的事。</p>
+<p>下半年我们开启了自己淘宝店（<a href="http://moozelady.taobao.com" target="_blank" rel="external">Mooze Lady</a>），也算是一次创业吧。店小什么都得自己来，从最初的选择产品，想店名，进货，装修，到推广，拍照，质检，售后让我们感受到了做生意的艰辛。用老婆的一句话：”给自己做，就算再多事情也不觉得累”。看着自己的小店一天天发展，就像把自己的孩子一点点带大一样。</p>
+<p>然而在小店在淘宝的大环境中生存并不是这么容易。没有价格优势，没有品牌积累，效率低下的物流，中国大环境中扭曲的买家习惯无一不对小店的生存带来困扰。做的越久，越发现我们对中国电商圈的无知，太多东西需要我们去学习了。下一年一定要重新整理一下店铺的运营思路，重新定位客户群。不断学习在中国恶劣的电商环境中如何应对各类问题。</p>
+<p>一年下来，觉得自己的编程水平并没有多大提高，虽然对于编程的兴趣还是非常浓厚，参加Ruby社区，学习IOS，最近又想接触下GO语言， 不过自己向往的还是从事产品的研究和设计。对于编程这事儿想放下，却又难以放下。近来感觉自己已经慢慢的开始忽略那些花里胡哨的东西，越来越希望追求事物的本质，是不是做产品已经有点入门了？</p>
+<p>云计算基础架构应该是最近几个非常热门的话题之一，也是未来公司团队业务的发展方向。最近看了下vmware的产品，看的有点云里雾里，这才知道软件和硬件也是有很大的坎的。明年的主要心思应该要放在云计算架构上了。了解产品，学习分析产品，希望明年博客可以有很多关于云计算的原创文章可以分享出来。</p>
+<p>##明年目标：</p>
+<ul>
+<li>设计一款IOS应用</li>
+<li>了解云基础架构产品的划分和关系，了解各公司云产品的优劣</li>
+<li>了解GO语言，希望可以用go做点什么</li>
+</ul>
+<p>最后还要学习怎么当爸爸，哈哈…</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;2012年又要过去了，地球没有毁灭，生活还在继续。遵照惯例，又到了总结的时候了。&lt;/p&gt;
+&lt;p&gt;这一年，完成了人生中的两件大事：女朋友成功变身老婆，我的小宝宝也将会在明年初出世（不出意外应该是大蛇）。不多久我们又加入了房奴的队列，作为一个中国人，尤其在上海，买房真是一件头痛
+    
+    </summary>
+    
+      <category term="生活" scheme="http://zhex.me/categories/%E7%94%9F%E6%B4%BB/"/>
+    
+    
+  </entry>
+  
+</feed>

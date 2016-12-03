@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh_CN">
+<head>
+	<meta charset="UTF-8">
+
+<title>为什么我们的 Angular 应用总是很慢</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+</head>
+<body>
+    <header id="header">
+    <ul class="nav">
+        <li><a href="/archives">归档</a></li>
+        <li><a href="/about">关于</a></li>
+    </ul>
+
+    <div class="logo"><a href="/">ZheX.me</a></div>
+</header>
+
+
+    <section id="main"><article>
+    <header>
+        <h1>为什么我们的 Angular 应用总是很慢</h1>
+        <div class="info">
+            <time datetime="2013-11-22T06:29:00.000Z" itemprop="datePublished">2013-11-22</time>
+
+            
+    <div class="article-category">
+    <a class="article-category-link" href="/categories/前端开发/">前端开发</a>►<a class="article-category-link" href="/categories/前端开发/AngularJS/">AngularJS</a>
+    </div>
+
+
+        </div>
+    </header>
+
+    <div class="article-entry"><p>AngularJS 作为 Google 开源的 JS 前端框架最近一直很火。 在 html 中加上几个标签， 根据格式写几句 javascript 代码， 一个单页应用就总跑起来了。其方便的上手体验， 双向数据绑定等特性给了很多前端开发者很好的亲切感。 而然随着大家逐渐用 angular 开始开发稍大一点的项目，发现做出来的应用总是非常慢，这完全颠覆了 angular 上来时给我们描绘的美好画面。既然遇到问题就要解决，让我们来看看为什么我们的 angular 应用这么慢。</p>
+<h2 id="Dirty-checking"><a href="#Dirty-checking" class="headerlink" title="Dirty checking"></a>Dirty checking</h2><p>为了实现页面数据的实时同步，angular 采用 dirty checking 来遍历绑定的对象，比较 value 现在和过去的值。如果 value 有发生变化，就触发 change 事件。<br>Digest 是执行 dirty checking 的机制， 由 $digest() 触发。 $digest() 每50ms执行一次，触发所属 scope 和其子 scope 的 dirty checking， dirty checking 又会触发 $watch(), 使整个 angular 中绑定的对象活起来。</p>
+<p>正是因为这样频繁的触发，使得 dirty checking 有可能成为性能问题的根源。 官方给出的数据是 angular 在2000个数据绑定以上才会出现性能问题， 这个数字在大多数情况下肯定是够用了，然而在一些特殊情况，比如 grid table， 大数据量的 dropdown list，或者大数据量的列表中， 2000个数据绑定很快就会被消耗完了。</p>
+<h2 id="scope-定时器回收"><a href="#scope-定时器回收" class="headerlink" title="$scope 定时器回收"></a>$scope 定时器回收</h2><p>当很多新手开始接触 angular 的时候并没有很好的了解其运行机制，所以经常会为了达到一些业务需求上的目的而在代码中添加定时器，并且很多人都没有对定时器作回收的习惯。在传统的 web 开发中，这常常不是问题，因为一旦页面切换，整个页面上的对象也都消失了。 而在 angular 中，所有元素都存活在单页面上，当 scope 的生命周期结束时没有办法自动清楚这些自定义的定时器，久而久之， 页面中存活着大量已经过期的定时器，内存被占用也越来越厉害。</p>
+<h2 id="开发中需要避免的事"><a href="#开发中需要避免的事" class="headerlink" title="开发中需要避免的事"></a>开发中需要避免的事</h2><p>既然已经明白了 angular 慢的原因，我们就需要在开发过程中做一些调整，避免一些导致慢的问题出现。</p>
+<h3 id="1-不要用数据绑定来渲染列表"><a href="#1-不要用数据绑定来渲染列表" class="headerlink" title="1. 不要用数据绑定来渲染列表"></a>1. 不要用数据绑定来渲染列表</h3><p>既然数据绑定时性能问题的根源， 我们就应该避免在特定的情况下使用，大数据列表和 grid table 就是。特别时在那些只是为了作展示，而不需要对数据做动态更新的情况下，就别用了。没有了angular， 我们还是可以用 handlebars 之类的模版引擎加上 jquery 来实现。</p>
+<h3 id="2-不要用内联方式实行数据"><a href="#2-不要用内联方式实行数据" class="headerlink" title="2. 不要用内联方式实行数据"></a>2. 不要用内联方式实行数据</h3><p>ng-repeat 会在每次执行 $digest 的时候执行模版内的方法，所以为了提高效率，不要直接在模版内使用函数过滤表达式，这样会拖慢整个应用。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">li</span> <span class="attr">ng-repeat</span>=<span class="string">"item in filteredItems()"</span>&gt;</span> // 错误的方法，函数会被频繁调用</div><div class="line"><span class="tag">&lt;<span class="name">li</span> <span class="attr">ng-repeat</span>=<span class="string">"item in items"</span>&gt;</span> // 建议使用方法</div></pre></td></tr></table></figure>
+<h3 id="3-使用数据缓存"><a href="#3-使用数据缓存" class="headerlink" title="3. 使用数据缓存"></a>3. 使用数据缓存</h3><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line">/* Controller */</div><div class="line">// 基础数据 </div><div class="line">var items = [&#123;name:"John", active:true &#125;, &#123;name:"Adam"&#125;, &#123;name:"Chris"&#125;, &#123;name:"Heather"&#125;]; </div><div class="line"></div><div class="line">// 初始化数据</div><div class="line">$scope.displayedItems = items;</div><div class="line"></div><div class="line">// 过滤缓存</div><div class="line">var filteredLists['active'] = $filter('filter)(items, &#123;"active" : true&#125;);</div><div class="line"></div><div class="line">// 实现过滤器</div><div class="line">$scope.applyFilter = function(type) &#123;</div><div class="line">    if (filteredLists.hasOwnProperty(type)&#123; // Check if filter is cached</div><div class="line">        $scope.displayedItems = filteredLists[type];</div><div class="line">    &#125; else &#123; </div><div class="line">        /* Non cached filtering */</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">// Reset filter</div><div class="line">$scope.resetFilter = function() &#123;</div><div class="line">    $scope.displayedItems = items;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">/* View */</div><div class="line"><span class="tag">&lt;<span class="name">button</span> <span class="attr">ng-click</span>=<span class="string">"applyFilter('active')"</span>&gt;</span>Select active<span class="tag">&lt;/<span class="name">button</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">ul</span>&gt;</span><span class="tag">&lt;<span class="name">li</span> <span class="attr">ng-repeat</span>=<span class="string">"item in displayedItems"</span>&gt;</span>&#123;&#123;item.name&#125;&#125;<span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;/<span class="name">ul</span>&gt;</span></div></pre></td></tr></table></figure>
+<h3 id="4-在使用额外的模版时，用-ng-if-代替-ng-show"><a href="#4-在使用额外的模版时，用-ng-if-代替-ng-show" class="headerlink" title="4. 在使用额外的模版时，用 ng-if 代替 ng-show"></a>4. 在使用额外的模版时，用 ng-if 代替 ng-show</h3><p>当通过模版或者 directive 来显示附加信息时，比如： 点击商品显示商品详细信息时， 应该使用 ng-if 代替 ng-show。 这可以减少页面内绑定对象的数量。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">li</span> <span class="attr">ng-repeat</span>=<span class="string">"item in items"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">p</span>&gt;</span> &#123;&#123; item.title &#125;&#125; <span class="tag">&lt;/<span class="name">p</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">button</span> <span class="attr">ng-click</span>=<span class="string">"item.showDetails = !item.showDetails"</span>&gt;</span>Show details<span class="tag">&lt;/<span class="name">buttons</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">ng-if</span>=<span class="string">"item.showDetails"</span>&gt;</span></div><div class="line">        &#123;&#123;item.details&#125;&#125;</div><div class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">li</span>&gt;</span></div></pre></td></tr></table></figure>
+<h3 id="5-不要使用-ng-mouseenter-和-ng-mouseleave"><a href="#5-不要使用-ng-mouseenter-和-ng-mouseleave" class="headerlink" title="5. 不要使用 ng-mouseenter 和 ng-mouseleave"></a>5. 不要使用 ng-mouseenter 和 ng-mouseleave</h3><p>使用 angular 内建的 ng-mouseenter, ng-mouseleave 会导致视图闪烁。 如果想实现一些动态效果，建议使用 jQuery 的 animation。 </p>
+<h3 id="6-使用-ng-show-来隐藏不需要的元素"><a href="#6-使用-ng-show-来隐藏不需要的元素" class="headerlink" title="6. 使用 ng-show 来隐藏不需要的元素"></a>6. 使用 ng-show 来隐藏不需要的元素</h3><p>在 ng-repeat 中的 filter 会为每个过滤创建一个元数据的子集。 过滤时，angular 通过调用 $destroy 方法把多余的元素从 $scope 中移除。 当过滤器发生变化的时候又把元素重新关联回 $scope. 每一次动作都会产生性能开销，多数情况下，这样做是没有问题的， 但如果操作频繁，或者数据表非常大的话，就会使性能降低。 这个时候我们可以用计算属性的方法来触发 ng-show 和 ng-hide， 这样可以明显提高性能。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">ng-model</span>=<span class="string">"query"</span>&gt;</span><span class="tag">&lt;/<span class="name">input</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">li</span> <span class="attr">ng-repeat</span>=<span class="string">"item in items"</span> <span class="attr">ng-show</span>=<span class="string">"([item.name] | filter:query).length"</span>&gt;</span>&#123;&#123;item.name&#125;&#125;<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div></pre></td></tr></table></figure>
+<h3 id="7-使用-debounce-过滤数据"><a href="#7-使用-debounce-过滤数据" class="headerlink" title="7. 使用 debounce 过滤数据"></a>7. 使用 debounce 过滤数据</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* Controller */</span></div><div class="line">$scope.$watch(<span class="string">'queryInput'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">newValue, oldValue</span>) </span>&#123;</div><div class="line">    <span class="keyword">if</span> (newValue === oldValue) &#123; <span class="keyword">return</span>; &#125;</div><div class="line">    $debounce(applyQuery, <span class="number">350</span>);</div><div class="line">&#125;);</div><div class="line"><span class="keyword">var</span> applyQuery = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123; </div><div class="line">    $scope.filter.query = $scope.query;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">/* View */</div><div class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">ng-model</span>=<span class="string">"queryInput"</span>/&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">li</span> <span class="attr">ng-repeat</span>= <span class="string">item</span> <span class="attr">in</span> <span class="attr">items</span> | <span class="attr">filter:filter.query</span>&gt;</span>&#123;&#123; item.title &#125;&#125; <span class="tag">&lt;/<span class="name">li</span>&gt;</span></div></pre></td></tr></table></figure>
+<h3 id="8-销毁定时器"><a href="#8-销毁定时器" class="headerlink" title="8. 销毁定时器"></a>8. 销毁定时器</h3><p>定时器无法被自动回收，所以我们需要自己手动回收</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> timer;</div><div class="line"></div><div class="line">timer = $timeout(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="comment">// do something；</span></div><div class="line">&#125;, <span class="number">1000</span>);</div><div class="line"></div><div class="line">$scope.$on(<span class="string">'$destroy'</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">    $timeout.cancel(timer);</div><div class="line">&#125;);</div></pre></td></tr></table></figure></div>
+
+    <footer>
+    </footer>
+</article>
+
+
+  <section id="comments">
+    <!-- 多说评论框 start -->
+    <div class="ds-thread" data-thread-key="post-why-out-angular-app-is-slow" data-title="为什么我们的 Angular 应用总是很慢" data-url="http://zhex.me/blog/2013/11/22/why-out-angular-app-is-slow/"></div>
+    <!-- 多说评论框 end -->
+    <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+    <script type="text/javascript">
+    var duoshuoQuery = {short_name:'zhex'};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0] 
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+      </script>
+    <!-- 多说公共JS代码 end -->
+  </section>
+
+
+</section>
+
+    <footer id="footer">
+    &copy;2016 ZheX, Powered by <a href="http://hexo.io">Hexo</a>
+</footer>
+
+
+    
+</body>
+</html>

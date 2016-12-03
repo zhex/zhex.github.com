@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh_CN">
+<head>
+	<meta charset="UTF-8">
+
+<title>HTML5 Fullscreen API</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+</head>
+<body>
+    <header id="header">
+    <ul class="nav">
+        <li><a href="/archives">归档</a></li>
+        <li><a href="/about">关于</a></li>
+    </ul>
+
+    <div class="logo"><a href="/">ZheX.me</a></div>
+</header>
+
+
+    <section id="main"><article>
+    <header>
+        <h1>HTML5 Fullscreen API</h1>
+        <div class="info">
+            <time datetime="2013-02-27T14:19:00.000Z" itemprop="datePublished">2013-02-27</time>
+
+            
+    <div class="article-category">
+    <a class="article-category-link" href="/categories/前端开发/">前端开发</a>
+    </div>
+
+
+        </div>
+    </header>
+
+    <div class="article-entry"><p>多年来，浏览器厂商都没有像 Flash 那样在网页端提供全屏模式调用， 原因只有一个: 安全。如果应用程序可以强制用户运行在全屏模式， 那用户将会失去对浏览器的控制，再也看不见浏览器菜单，看不到工具条， 甚至无法关闭窗口。 有些别有用心的程序员还可以通过种种手段对用户端的信息安全造成威胁。</p>
+<p>随着HTML5标准的到来，很多浏览器开发商们终于把 Fullscreen API 带了进来。 区别于浏览器默认的 F11 按钮，Fullscreen API 并不是让整个浏览器处于全屏模式， 而是让页面中的某个元素处于全屏模式，可以是图片，视频，或者跑游戏的 Canvas 元素。而当元素被放到倒全屏模式的时候， 用户屏幕会收到在任何时候按 ESC 可以返回的提示。</p>
+<p>Fullscreen 的调用非常简单:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 进去全屏模式</span></div><div class="line"><span class="built_in">document</span>.getElementById(<span class="string">"myvideo"</span>).requestFullScreen();</div><div class="line"></div><div class="line"><span class="comment">// 退出全屏模式</span></div><div class="line"><span class="built_in">document</span>.cancelFullScreen();</div><div class="line"></div><div class="line"><span class="comment">// 当进入全屏模式的时候，document.fullScreen 将会返回 true</span></div><div class="line"><span class="built_in">console</span>.log(<span class="built_in">document</span>.fullScreen)</div></pre></td></tr></table></figure>
+<p>同时， 我们可以通过 :full-screen 尾类来对进入全屏模式的元素重新绘制样式。</p>
+<p>对于不同的浏览器，苦逼的程序员还是不能忘记用各种前缀标签: -webkit, -moz, -ms ….., 所以我们可以写一个程序来自动执行这些方法。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> pfx = [<span class="string">"webkit"</span>, <span class="string">"moz"</span>, <span class="string">"ms"</span>, <span class="string">"o"</span>, <span class="string">""</span>];</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">runPrefixMethod</span>(<span class="params">obj, method</span>) </span>&#123;</div><div class="line">	<span class="keyword">var</span> p = <span class="number">0</span>, m, t;</div><div class="line">	<span class="keyword">while</span> (p &lt; pfx.length &amp;&amp; !obj[m]) &#123;</div><div class="line">		m = method;</div><div class="line">		<span class="keyword">if</span> (pfx[p] == <span class="string">""</span>) &#123;</div><div class="line">			m = m.substr(<span class="number">0</span>,<span class="number">1</span>).toLowerCase() + m.substr(<span class="number">1</span>);</div><div class="line">		&#125;</div><div class="line">		m = pfx[p] + m;</div><div class="line">		t = <span class="keyword">typeof</span> obj[m];</div><div class="line">		<span class="keyword">if</span> (t != <span class="string">"undefined"</span>) &#123;</div><div class="line">			pfx = [pfx[p]];</div><div class="line">			<span class="keyword">return</span> (t == <span class="string">"function"</span> ? obj[m]() : obj[m]);</div><div class="line">		&#125;</div><div class="line">		p++;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>使用时的代码为：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> e = <span class="built_in">document</span>.getElementById(<span class="string">"fullscreen"</span>);</div><div class="line"></div><div class="line">e.onclick = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">	<span class="keyword">if</span> (runPrefixMethod(<span class="built_in">document</span>, <span class="string">"FullScreen"</span>) || runPrefixMethod(<span class="built_in">document</span>, <span class="string">"IsFullScreen"</span>)) &#123;</div><div class="line">		runPrefixMethod(<span class="built_in">document</span>, <span class="string">"CancelFullScreen"</span>);</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">else</span> &#123;</div><div class="line">		runPrefixMethod(e, <span class="string">"RequestFullScreen"</span>);</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>至于 CSS 的前缀后缀就只能依靠编辑器插件来帮助偷懒了。</p>
+</div>
+
+    <footer>
+    </footer>
+</article>
+
+
+  <section id="comments">
+    <!-- 多说评论框 start -->
+    <div class="ds-thread" data-thread-key="post-html5-fullscreen-api" data-title="HTML5 Fullscreen API" data-url="http://zhex.me/blog/2013/02/27/html5-fullscreen-api/"></div>
+    <!-- 多说评论框 end -->
+    <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+    <script type="text/javascript">
+    var duoshuoQuery = {short_name:'zhex'};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0] 
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+      </script>
+    <!-- 多说公共JS代码 end -->
+  </section>
+
+
+</section>
+
+    <footer id="footer">
+    &copy;2016 ZheX, Powered by <a href="http://hexo.io">Hexo</a>
+</footer>
+
+
+    
+</body>
+</html>
