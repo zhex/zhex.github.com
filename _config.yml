@@ -78,7 +78,7 @@ deploy:
 sitemap:
   path: sitemap.xml
 
-disqus_shortname: zhex
+duoshuo_shortname: zhex
 
 feed:
   type: atom
